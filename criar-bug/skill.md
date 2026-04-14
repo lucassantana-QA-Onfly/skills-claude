@@ -168,27 +168,31 @@ Salve a chave e o **summary (título)** da nova issue criada para uso nos próxi
 
 Quando o ticket Fix já existir (informado pelo usuário), use `mcp__Jira__getJiraIssue` para buscar o título real do ticket antes de enviar a notificação.
 
-### 5.5 Anexar screenshot ao ticket Fix (opcional)
-Se o usuário informou um arquivo de imagem no relato, anexe-o ao **ticket Fix criado** via Bash tool:
+### 5.5 Anexar arquivo ao ticket Fix (opcional)
+Se o usuário informou um arquivo (imagem ou vídeo) no relato, anexe-o ao **ticket Fix criado** via Bash tool:
 
 ```bash
-curl -s -X POST \
+WINPATH=$(cygpath -w "/c/caminho/para/arquivo") && curl -s -X POST \
   "https://api.atlassian.com/ex/jira/24479377-75bf-4543-a6f6-0a189a0ec825/rest/api/3/issue/{TEST-XXX}/attachments" \
-  -H "Authorization: Basic $(printf '%s' "$JIRA_EMAIL:$JIRA_TOKEN" | base64 -w 0)" \
+  -H "Authorization: Basic $(printf '%s' "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" | base64 -w 0)" \
   -H "X-Atlassian-Token: no-check" \
-  -F "file=@'{CAMINHO_DO_ARQUIVO}';type={MIME_TYPE}"
+  -F "file=@\"$WINPATH\";type={MIME_TYPE}"
 ```
 
 **Adaptações para Windows (Git Bash):**
-- Converta `\` por `/` no caminho do arquivo (ex: `C:/Users/lucas/screenshot.png`)
-- `base64 -w 0` e `printf '%s'` funcionam normalmente no Git Bash
-- As variáveis `$JIRA_EMAIL` e `$JIRA_TOKEN` devem estar definidas no ambiente — nunca interpole os valores diretamente no comando
+- Use `cygpath -w` para converter o caminho Unix para Windows antes de passar ao curl
+- As variáveis `$ATLASSIAN_EMAIL` e `$ATLASSIAN_TOKEN` já estão configuradas no ambiente — nunca interpole os valores diretamente
 
 Detecte o tipo MIME pelo formato do arquivo:
 - `.png` → `image/png`
 - `.jpg` / `.jpeg` → `image/jpeg`
 - `.gif` → `image/gif`
 - `.webp` → `image/webp`
+- `.mp4` → `video/mp4`
+- `.mov` → `video/quicktime`
+
+**Limitação importante — embedding inline na descrição:**
+Não é possível incorporar o arquivo inline no corpo da descrição via API REST. O Jira exige um `mediaApiFileId` (ID interno do serviço de mídia da Atlassian) para usar o nó `mediaSingle` do ADF, e esse ID **não é retornado** pelos endpoints REST públicos. O arquivo ficará visível na aba **Attachments** do ticket. Para exibição inline, o usuário deve arrastar o arquivo para dentro da descrição diretamente na interface do Jira.
 
 Se o curl retornar erro, informe o usuário e continue o fluxo normalmente.
 
