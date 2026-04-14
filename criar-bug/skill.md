@@ -1,6 +1,6 @@
 ---
 name: criar-bug
-description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original, marca "Need fix" e notifica. Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST, vincula como "causes" na tarefa original e notifica. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
+description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original e marca "Need fix". Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST e vincula como "causes" na tarefa original. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
@@ -85,19 +85,10 @@ no campo "Checkbox":
 Se o campo não existir ou "Need fix" não for encontrado, informe o usuário
 em vez de falhar silenciosamente.
 
-### 7. Notificar o responsável via Google Chat
-Consulte a memória `reference_google_chat_webhooks.md` para identificar o webhook
-correto com base no projeto da tarefa. Envie uma mensagem no espaço correspondente
-informando sobre o bug registrado, incluindo o link da tarefa no Jira.
-
-Envie via curl usando `--data-binary @arquivo.json` para evitar problemas de encoding.
-Evite acentos e caracteres especiais **somente na mensagem do Google Chat** para garantir legibilidade no webhook. Isso **não se aplica** ao comentário registrado no Jira — este deve preservar a acentuação correta do português.
-
-### 8. Confirmar ao usuário
+### 7. Confirmar ao usuário
 Informe tudo que foi feito:
 - Confirmação de que o bug foi registrado como comentário na tarefa original
 - Confirmação de que "Need fix" foi marcado (ou aviso se não foi possível)
-- Confirmação de que o responsável foi notificado via Google Chat
 
 ---
 
@@ -204,64 +195,8 @@ Use `mcp__Jira__createIssueLink` para vincular as issues:
 
 Se o tipo "causes" não existir, use o tipo de link mais semanticamente próximo disponível e informe o usuário qual foi usado.
 
-### 7. Notificar via Google Chat
-Consulte a memória `reference_google_chat_webhooks.md` para o webhook do projeto Onhappy (DLT → Onhappy, CHEER → Onhappy).
-
-Envie a mensagem no seguinte formato de card (manter este layout exato):
-
-```json
-{
-  "cards": [
-    {
-      "header": {
-        "title": "Bug registrado - [ISSUE-KEY]",
-        "subtitle": "[Nome do projeto]"
-      },
-      "sections": [
-        {
-          "widgets": [
-            {
-              "textParagraph": {
-                "text": "Ola [displayName do assignee], um ticket Fix foi criado e vinculado a [ISSUE-KEY].\n\n*[Titulo do ticket Fix]*"
-              }
-            },
-            {
-              "buttons": [
-                {
-                  "textButton": {
-                    "text": "Ver Fix: [TEST-XXX]",
-                    "onClick": { "openLink": { "url": "https://onflylabs.atlassian.net/browse/TEST-XXX" } }
-                  }
-                },
-                {
-                  "textButton": {
-                    "text": "Ver tarefa: [ISSUE-KEY]",
-                    "onClick": { "openLink": { "url": "https://onflylabs.atlassian.net/browse/[ISSUE-KEY]" } }
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-```
-
-Substitua:
-- `[displayName do assignee]` pelo nome do responsável da tarefa original (salvo no passo 1)
-- `[ISSUE-KEY]` pela chave da tarefa original
-- `[TEST-XXX]` pela chave do ticket Fix criado
-- `[Titulo do ticket Fix]` pelo summary do ticket Fix criado no passo 5
-- `[Nome do projeto]` pelo nome do projeto Jira da tarefa original
-
-Envie via curl usando `--data-binary @arquivo.json` para evitar problemas de encoding.
-Evite acentos e caracteres especiais **somente na mensagem do Google Chat** para garantir legibilidade no webhook. Isso **não se aplica** ao título nem à descrição do ticket Fix no Jira — estes devem preservar a acentuação correta do português.
-
-### 8. Confirmar ao usuário
+### 7. Confirmar ao usuário
 Informe tudo que foi feito:
 - Confirmação de que o ticket Fix foi criado no projeto TEST (com a chave gerada)
 - Confirmação de que o screenshot foi anexado ao ticket Fix (ou aviso se não foi possível/informado)
 - Confirmação de que o vínculo "causes" foi criado com a tarefa original
-- Confirmação de que o responsável foi notificado via Google Chat
