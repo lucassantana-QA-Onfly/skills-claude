@@ -117,7 +117,8 @@ Pergunte ao usuário:
 > - O que era esperado (comportamento esperado)
 > - Passos para reproduzir
 > - Ambiente/contexto (ex: navegador, dispositivo, dados usados)
-> - Qualquer outra informação relevante"
+> - Qualquer outra informação relevante
+> - Print/screenshot (informe o caminho do arquivo, se tiver)"
 
 Aguarde o relato antes de continuar.
 
@@ -166,6 +167,30 @@ Use `mcp__Jira__createJiraIssue` para criar uma nova issue com:
 Salve a chave e o **summary (título)** da nova issue criada para uso nos próximos passos.
 
 Quando o ticket Fix já existir (informado pelo usuário), use `mcp__Jira__getJiraIssue` para buscar o título real do ticket antes de enviar a notificação.
+
+### 5.5 Anexar screenshot ao ticket Fix (opcional)
+Se o usuário informou um arquivo de imagem no relato, anexe-o ao **ticket Fix criado** via Bash tool:
+
+```bash
+curl -s -X POST \
+  "https://api.atlassian.com/ex/jira/24479377-75bf-4543-a6f6-0a189a0ec825/rest/api/3/issue/{TEST-XXX}/attachments" \
+  -H "Authorization: Basic $(printf '%s' "$JIRA_EMAIL:$JIRA_TOKEN" | base64 -w 0)" \
+  -H "X-Atlassian-Token: no-check" \
+  -F "file=@'{CAMINHO_DO_ARQUIVO}';type={MIME_TYPE}"
+```
+
+**Adaptações para Windows (Git Bash):**
+- Converta `\` por `/` no caminho do arquivo (ex: `C:/Users/lucas/screenshot.png`)
+- `base64 -w 0` e `printf '%s'` funcionam normalmente no Git Bash
+- As variáveis `$JIRA_EMAIL` e `$JIRA_TOKEN` devem estar definidas no ambiente — nunca interpole os valores diretamente no comando
+
+Detecte o tipo MIME pelo formato do arquivo:
+- `.png` → `image/png`
+- `.jpg` / `.jpeg` → `image/jpeg`
+- `.gif` → `image/gif`
+- `.webp` → `image/webp`
+
+Se o curl retornar erro, informe o usuário e continue o fluxo normalmente.
 
 ### 6. Vincular o ticket Fix como "causes" na tarefa original
 Use `mcp__Jira__createIssueLink` para vincular as issues:
@@ -233,5 +258,6 @@ Evite acentos e caracteres especiais **somente na mensagem do Google Chat** para
 ### 8. Confirmar ao usuário
 Informe tudo que foi feito:
 - Confirmação de que o ticket Fix foi criado no projeto TEST (com a chave gerada)
+- Confirmação de que o screenshot foi anexado ao ticket Fix (ou aviso se não foi possível/informado)
 - Confirmação de que o vínculo "causes" foi criado com a tarefa original
 - Confirmação de que o responsável foi notificado via Google Chat
