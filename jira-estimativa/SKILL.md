@@ -1,6 +1,6 @@
 ---
 name: jira-estimativa
-description: Consulta uma demanda no Jira e gera uma estimativa de tempo e esforço de teste (QA) usando a técnica de três pontos, exibindo o resultado sem salvar. Aceita chave da issue como argumento (ex: /jira-estimativa PROJ-123) ou detecta pelo contexto.
+description: Consulta uma demanda no Jira e gera uma estimativa de tempo e esforço de teste (QA) usando a técnica de três pontos. Após exibir o resultado, cria um ticket do tipo Session no projeto TEST com o campo Effort preenchido. Aceita chave da issue como argumento (ex: /jira-estimativa PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
@@ -127,7 +127,25 @@ Com base na análise dos passos anteriores, gere a estimativa no seguinte format
 ---
 
 ### 6. Apresentar a estimativa ao usuário
-Exiba a estimativa completa conforme o formato acima. Não salve nada no Jira — apenas exiba o resultado na conversa.
+Exiba a estimativa completa conforme o formato acima.
 
 Ao final, informe:
 > "Estimativa gerada com base na análise da issue usando a técnica de três pontos (PERT). Caso queira gerar os casos de teste detalhados, use `/jira-testes [ISSUE-KEY]`."
+
+### 7. Criar ticket Session no projeto TEST com o Effort preenchido
+
+Após exibir a estimativa, pergunte ao usuário se deseja registrar no Jira antes de prosseguir.
+
+Se confirmar, crie um ticket do tipo **Session** no projeto **TEST** usando `mcp__Jira__createJiraIssue` com os seguintes campos:
+
+- **project**: `TEST`
+- **issuetype**: `Session` (id `11106`)
+- **summary**: `Estimativa — [ISSUE-KEY]: [Título da issue]`
+- **customfield_11756**: valor numérico do **E total** (soma de todos os E da tabela PERT, em horas — use apenas o número, sem "h")
+- **description** (ADF): inclua o bloco completo da estimativa gerada no passo 5, formatado em ADF. Use parágrafos, headings e uma tabela ADF para reproduzir a tabela PERT.
+
+Após criar o ticket, vincule-o à issue original usando `mcp__Jira__createIssueLink` com o tipo **"relates to"** (ou o tipo disponível mais próximo), sendo:
+- `inwardIssue`: chave do ticket Session criado
+- `outwardIssue`: chave da issue original analisada
+
+Confirme ao usuário informando a chave e o link do ticket criado.
