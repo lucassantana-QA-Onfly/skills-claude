@@ -85,10 +85,35 @@ no campo "Checkbox":
 Se o campo não existir ou "Need fix" não for encontrado, informe o usuário
 em vez de falhar silenciosamente.
 
-### 7. Confirmar ao usuário
+### 7. Comentar na tarefa original mencionando o responsável
+Use `mcp__Jira__addCommentToJiraIssue` na tarefa original com um comentário ADF mencionando o assignee salvo no passo 1:
+
+```json
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "mention",
+          "attrs": {
+            "id": "<accountId do assignee>",
+            "text": "@<displayName do assignee>"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 8. Confirmar ao usuário
 Informe tudo que foi feito:
 - Confirmação de que o bug foi registrado como comentário na tarefa original
 - Confirmação de que "Need fix" foi marcado (ou aviso se não foi possível)
+- Confirmação de que o responsável foi mencionado na tarefa original
 
 ---
 
@@ -195,8 +220,33 @@ Use `mcp__Jira__createIssueLink` para vincular as issues:
 
 Se o tipo "causes" não existir, use o tipo de link mais semanticamente próximo disponível e informe o usuário qual foi usado.
 
-### 7. Confirmar ao usuário
+### 7. Comentar na tarefa original mencionando o responsável
+Use `mcp__Jira__addCommentToJiraIssue` na tarefa original com um comentário ADF mencionando o assignee salvo no passo 1:
+
+```json
+{
+  "type": "doc",
+  "version": 1,
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "mention",
+          "attrs": {
+            "id": "<accountId do assignee>",
+            "text": "@<displayName do assignee>"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### 8. Confirmar ao usuário
 Informe tudo que foi feito:
 - Confirmação de que o ticket Fix foi criado no projeto TEST (com a chave gerada)
 - Confirmação de que o screenshot foi anexado ao ticket Fix (ou aviso se não foi possível/informado)
 - Confirmação de que o vínculo "causes" foi criado com a tarefa original
+- Confirmação de que o responsável foi mencionado na tarefa original
