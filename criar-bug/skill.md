@@ -214,14 +214,12 @@ Se o curl retornar erro, informe o usuário e continue o fluxo normalmente.
 
 ### 6. Vincular o ticket Fix como "causes" na tarefa original
 Use `mcp__Jira__createIssueLink` para vincular as issues:
-- **Tipo de link**: "causes" (ou equivalente — use `mcp__Jira__getIssueLinkTypes` para verificar o tipo exato disponível)
-- **Issue de origem (outward)**: o ticket Fix criado (ex: TEST-456)
-- **Issue de destino (inward)**: a tarefa original (ex: DLT-170)
+- **Tipo de link**: `Problem/Incident` (outward: "causes" / inward: "is caused by")
+- **outwardIssue**: o ticket Fix criado (ex: TEST-456) — lado que "causes"
+- **inwardIssue**: a tarefa original (ex: DLT-170) — lado que "is caused by"
 
-Se o tipo "causes" não existir, use o tipo de link mais semanticamente próximo disponível e informe o usuário qual foi usado.
-
-### 7. Comentar na tarefa original mencionando o responsável
-Use `mcp__Jira__addCommentToJiraIssue` na tarefa original com um comentário ADF mencionando o assignee salvo no passo 1:
+### 7. Comentar no ticket Fix mencionando o responsável da tarefa original
+Use `mcp__Jira__addCommentToJiraIssue` no **ticket Fix criado** (ex: TEST-456) com um comentário ADF mencionando o assignee salvo no passo 1:
 
 ```json
 {
