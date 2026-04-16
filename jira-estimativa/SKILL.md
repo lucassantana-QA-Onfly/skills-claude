@@ -32,6 +32,33 @@ Em seguida use `Read` no caminho `/tmp/jira_img_[id].png` para visualizar e extr
 
 Use o conteúdo das imagens para enriquecer a análise antes de gerar a estimativa.
 
+### 1c. Acessar links do Figma (se houver)
+
+Verifique se a issue contém links do Figma. Procure em:
+1. **Descrição da issue**: busque por URLs com padrão `figma.com/design/`, `figma.com/board/` ou `figma.com/make/`
+2. **Remote links**: use `mcp__Jira__getJiraIssueRemoteIssueLinks` para listar links externos da issue — filtre por URLs de Figma
+
+Se encontrar um ou mais links do Figma, para cada link:
+
+**a) Extraia o `fileKey` e o `nodeId` da URL:**
+- `figma.com/design/:fileKey/:fileName?node-id=:nodeId` → converta `-` em `:` no nodeId
+- `figma.com/board/:fileKey/...` → use `get_figjam`
+- `figma.com/make/:fileKey/...` → use o fileKey normalmente
+
+**b) Acesse o design com `mcp__claude_ai_Figma__get_design_context`** passando `fileKey` e `nodeId`.
+Se não houver nodeId, use apenas o fileKey.
+
+**c) Extraia informações relevantes para a estimativa:**
+- Quantidade de telas, fluxos e estados diferentes a testar
+- Complexidade visual: formulários, tabelas, modais, navegações
+- Estados dos componentes (vazio, loading, erro, sucesso, disabled, etc.)
+- Variações de layout (mobile x desktop, breakpoints, se houver)
+- Anotações do designer com restrições ou regras de negócio visuais
+
+Use essas informações para calibrar melhor os fatores de complexidade e os valores O/M/P na estimativa PERT.
+
+> Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
+
 ### 2. Analisar a complexidade da demanda
 Com base no conteúdo da issue, avalie os seguintes fatores de complexidade:
 

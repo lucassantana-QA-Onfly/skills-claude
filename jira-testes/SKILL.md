@@ -31,6 +31,34 @@ Em seguida use `Read` no caminho `/tmp/jira_img_[id].png` para visualizar e extr
 
 Use o conteúdo das imagens para enriquecer a análise da issue antes de gerar os casos de teste.
 
+### 1c. Acessar links do Figma (se houver)
+
+Verifique se a issue contém links do Figma. Procure em:
+1. **Descrição da issue**: busque por URLs com padrão `figma.com/design/`, `figma.com/board/` ou `figma.com/make/`
+2. **Remote links**: use `mcp__Jira__getJiraIssueRemoteIssueLinks` para listar links externos da issue — filtre por URLs de Figma
+
+Se encontrar um ou mais links do Figma, para cada link:
+
+**a) Extraia o `fileKey` e o `nodeId` da URL:**
+- `figma.com/design/:fileKey/:fileName?node-id=:nodeId` → converta `-` em `:` no nodeId
+- `figma.com/board/:fileKey/...` → use `get_figjam`
+- `figma.com/make/:fileKey/...` → use o fileKey normalmente
+
+**b) Acesse o design com `mcp__claude_ai_Figma__get_design_context`** passando `fileKey` e `nodeId`.
+Se não houver nodeId, use apenas o fileKey.
+
+**c) Extraia informações relevantes para o teste:**
+- Fluxos de navegação e transições de tela
+- Estados dos componentes (vazio, carregado, erro, loading, disabled, hover, etc.)
+- Campos de formulário, validações visuais e mensagens de erro/sucesso
+- Variações de layout (mobile x desktop, se houver)
+- Anotações do designer (notas, restrições, regras descritas no Figma)
+- Comportamentos esperados descritos nos protótipos
+
+Use essas informações para enriquecer a análise e gerar casos de teste mais completos e precisos.
+
+> Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
+
 ### 2. Escolher as técnicas de teste
 Antes de gerar os casos, analise o conteúdo da issue e selecione as técnicas mais adequadas ao contexto. Informe ao usuário quais técnicas foram escolhidas e por quê.
 
