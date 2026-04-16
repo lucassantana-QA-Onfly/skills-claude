@@ -1,6 +1,6 @@
 ---
 name: criar-bug
-description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original e marca "Need fix". Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST e vincula como "causes" na tarefa original. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
+description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original e marca "Need fix". Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
@@ -212,11 +212,15 @@ Não é possível incorporar o arquivo inline no corpo da descrição via API RE
 
 Se o curl retornar erro, informe o usuário e continue o fluxo normalmente.
 
-### 6. Vincular o ticket Fix como "causes" na tarefa original
-Use `mcp__Jira__createIssueLink` para vincular as issues:
-- **Tipo de link**: `Problem/Incident` (outward: "causes" / inward: "is caused by")
-- **outwardIssue**: o ticket Fix criado (ex: TEST-456) — lado que "causes"
-- **inwardIssue**: a tarefa original (ex: DLT-170) — lado que "is caused by"
+### 6. Marcar "Need fix" na tarefa original (somente projetos CHEER)
+
+Se a issue original for do projeto **CHEER**, use `mcp__Jira__editJiraIssue` para marcar "Need fix" no campo "Checkbox":
+1. Localize o campo Checkbox (busque por `customfield_*` com label "Checkbox")
+2. Adicione "Need fix" à lista de itens marcados, **preservando os já existentes**
+
+Se o campo não existir ou "Need fix" não for encontrado, informe o usuário em vez de falhar silenciosamente.
+
+> Para issues **DLT**, este passo deve ser ignorado.
 
 ### 7. Comentar no ticket Fix mencionando o responsável da tarefa original
 Use `mcp__Jira__addCommentToJiraIssue` no **ticket Fix criado** (ex: TEST-456) com um comentário ADF mencionando o assignee salvo no passo 1:
@@ -246,5 +250,5 @@ Use `mcp__Jira__addCommentToJiraIssue` no **ticket Fix criado** (ex: TEST-456) c
 Informe tudo que foi feito:
 - Confirmação de que o ticket Fix foi criado no projeto TEST (com a chave gerada)
 - Confirmação de que o screenshot foi anexado ao ticket Fix (ou aviso se não foi possível/informado)
-- Confirmação de que o vínculo "causes" foi criado com a tarefa original
-- Confirmação de que o responsável foi mencionado na tarefa original
+- Confirmação de que "Need fix" foi marcado na tarefa original (somente CHEER) ou aviso se não foi possível
+- Confirmação de que o responsável foi mencionado no ticket Fix
