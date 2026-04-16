@@ -56,9 +56,18 @@ Use `mcp__Jira__createIssueLink` com:
 - `inwardIssue`: chave do ticket Project criado
 - `outwardIssue`: chave da issue original
 
-### 7. Confirmar ao usuário
+### 7. Adicionar plano de teste na descrição do ticket
+
+Verifique se a issue original possui um plano de teste na descrição (seção como "Test Plan", "Plano de Teste" ou similar).
+
+**Se houver:** copie o conteúdo do plano de teste e cole na descrição do ticket Project criado, usando `mcp__Jira__editJiraIssue` com `contentFormat: "adf"`.
+
+**Se não houver:** invoque a skill `/jira-testes` passando a chave da issue original para gerar um plano de teste. Após a geração, cole o resultado na descrição do ticket Project criado da mesma forma.
+
+### 8. Confirmar ao usuário
 
 Informe de forma resumida:
 - Chave e link do ticket Project criado
 - Que o vínculo com a issue original foi registrado
 - Que o campo Effort foi preenchido com o valor em horas
+- Que a descrição foi preenchida com o plano de teste
