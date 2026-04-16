@@ -48,6 +48,12 @@ Use `mcp__Jira__createJiraIssue` com os seguintes campos:
 - **summary**: `Sessão de Testes — [ISSUE-KEY]: [título da issue original]`
 - **assignee**: `accountId` obtido no passo 2
 - **customfield_11756**: valor numérico do E total em horas (apenas o número, sem "h")
+- **Categorias** (`customfield_*` correspondente): defina o valor conforme o projeto da issue original:
+  - Issue do projeto **DLT** → valor `onhappy-mobile`
+  - Issue do projeto **CHEER** → valor `onhappy-web`
+  - Outros projetos → omitir o campo
+
+  > Para descobrir o ID correto do campo e os IDs dos valores, use `mcp__Jira__getJiraIssueTypeMetaWithFields` no projeto TEST antes de criar o ticket.
 
 ### 6. Vincular o Project à issue original
 
