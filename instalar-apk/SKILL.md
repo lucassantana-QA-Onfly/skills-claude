@@ -6,11 +6,33 @@ argument-hint: ""
 
 # Skill: Instalar APK via USB
 
+## Permissões necessárias (settings.json)
+
+Para que esta skill rode sem prompts de confirmação, adicione ao `~/.claude/settings.json`:
+
+```json
+"permissions": {
+  "allow": [
+    "Bash(adb version)",
+    "Bash(adb devices)",
+    "Bash(adb shell pm list packages*)",
+    "Bash(adb uninstall*)",
+    "Bash(adb install*)",
+    "Bash(find ~/Downloads*)",
+    "Bash(date -r*)"
+  ]
+}
+```
+
+---
+
 ## O que essa skill faz
-1. Localiza o arquivo `app-release.apk` mais recente na pasta Downloads do usuário
-2. Verifica se há um dispositivo Android conectado via USB (ADB)
-3. Instala o APK no dispositivo
-4. Informa o resultado da instalação e a data/hora de modificação do arquivo
+1. Busca o APK mais recente no Google Drive do usuário
+2. Se não encontrar no Drive, localiza o `app-release.apk` mais recente na pasta Downloads
+3. Verifica se há um dispositivo Android conectado via USB (ADB)
+4. Desinstala a versão anterior do app, se houver
+5. Instala o APK no dispositivo
+6. Informa o resultado da instalação e a data/hora de modificação do arquivo
 
 ---
 
@@ -47,25 +69,24 @@ adb devices
 
 > **Nota:** Esta etapa é apenas leitura — execute os comandos diretamente sem pedir confirmação ao usuário.
 
-Execute o comando abaixo para listar todos os arquivos `app-release.apk` na pasta Downloads (incluindo subpastas) ordenados por data de modificação, do mais novo para o mais antigo:
+### 3.1 — Buscar no Google Drive
 
-```bash
-ls -t ~/Downloads/**/app-release.apk ~/Downloads/app-release.apk 2>/dev/null | head -1
-```
+Use a ferramenta `mcp__claude_ai_Google_Drive__search_files` para buscar o arquivo mais recente com nome `app-release.apk` no Google Drive do usuário.
 
-Se não encontrar, tente também com `find`:
+- Se encontrar, use o arquivo do Drive como fonte (faça download com `mcp__claude_ai_Google_Drive__download_file_content` ou salve localmente para instalação).
+- Se não encontrar nenhum resultado, prossiga para o passo 3.2.
+
+### 3.2 — Buscar na pasta Downloads (fallback)
+
+Se não encontrou no Drive, procure localmente:
+
 ```bash
 find ~/Downloads -name "app-release.apk" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | awk '{print $2}'
 ```
 
-Se nenhum arquivo for encontrado, informe o usuário e peça que confirme o nome e local do arquivo.
+Se nenhum arquivo for encontrado em nenhuma das fontes, informe o usuário e peça que confirme o nome e local do arquivo.
 
-Após encontrar o arquivo, capture também sua data/hora de modificação:
-```bash
-stat -c "%y" "<caminho_do_apk>"
-```
-
-No Windows (via bash/Git Bash), use:
+Após encontrar o arquivo, capture também sua data/hora de modificação. No Windows (via bash/Git Bash), use:
 ```bash
 date -r "<caminho_do_apk>"
 ```
