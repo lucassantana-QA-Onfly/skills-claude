@@ -72,22 +72,37 @@ date -r "<caminho_do_apk>"
 
 ---
 
-## Passo 4 — Instalar o APK
+## Passo 4 — Verificar se o app já está instalado e desinstalar
+
+O package name do app é `com.onhappy.app`. Verifique se está instalado:
+
+```bash
+adb shell pm list packages | grep com.onhappy.app
+```
+
+- Se retornar resultado, o app está instalado — desinstale-o:
+
+```bash
+adb uninstall com.onhappy.app
+```
+
+- Se não retornar nada, pule este passo e vá direto para a instalação.
+
+---
+
+## Passo 5 — Instalar o APK
 
 Execute:
 ```bash
-adb install -r "<caminho_do_apk>"
+adb install "<caminho_do_apk>"
 ```
 
-A flag `-r` permite reinstalar mantendo os dados do app.
-
 - Se o dispositivo exibir um prompt de confirmação, oriente o usuário a aceitar no celular.
-- Se retornar `INSTALL_FAILED_ALREADY_EXISTS` sem `-r`, tente com `-r`.
 - Se retornar outros erros, exiba o erro completo e oriente conforme o código.
 
 ---
 
-## Passo 5 — Reportar resultado
+## Passo 6 — Reportar resultado
 
 Ao final, exiba uma mensagem clara com:
 
