@@ -45,6 +45,8 @@ adb devices
 
 ## Passo 3 — Localizar o APK mais recente
 
+> **Nota:** Esta etapa é apenas leitura — execute os comandos diretamente sem pedir confirmação ao usuário.
+
 Execute o comando abaixo para listar todos os arquivos `app-release.apk` na pasta Downloads (incluindo subpastas) ordenados por data de modificação, do mais novo para o mais antigo:
 
 ```bash
