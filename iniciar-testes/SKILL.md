@@ -72,10 +72,22 @@ Prioridade na escolha do conteúdo da descrição (use o primeiro que existir):
 
 Ao preencher, crie a descrição já na criação do ticket (passo 5) usando `contentFormat: "adf"`. Se preferir, pode preencher depois via `mcp__Jira__editJiraIssue`.
 
-### 8. Confirmar ao usuário
+### 8. Transicionar a issue original para validação de QA
+
+Após todos os passos anteriores concluídos com sucesso, mova a **issue original** para a coluna de validação de QA.
+
+1. Use `mcp__Jira__getTransitionsForJiraIssue` na issue original para listar as transições disponíveis.
+2. Procure por uma transição cujo status de destino tenha nome compatível com validação de QA, considerando variações. Critério de match (case-insensitive, acentuação ignorada):
+   - Contém `qa validation`, `in validation`, `em validação`, `validação qa`, `validação de qa`, `qa em andamento`, `qa in progress`, `testing`, `in testing`, `em teste`, `em testes`
+3. Se houver exatamente uma transição candidata, aplique-a via `mcp__Jira__transitionJiraIssue`.
+4. Se houver **múltiplas** candidatas, prefira nesta ordem: `QA VALIDATION` > `In Validation` > `Em Validação` > `In Testing` > `Em Teste`. Informe ao usuário qual foi aplicada.
+5. Se **não** houver nenhuma transição compatível, informe o usuário (com a lista de transições disponíveis) em vez de falhar silenciosamente — não aplique nenhuma transição nesse caso.
+
+### 9. Confirmar ao usuário
 
 Informe de forma resumida:
 - Chave e link do ticket Project criado
 - Que o vínculo com a issue original foi registrado
 - Que o campo Effort foi preenchido com o valor em horas
-- Que a descrição foi preenchida com o plano de teste
+- Que a descrição foi preenchida com critérios de aceite / plano de teste
+- Que a issue original foi movida para a coluna de validação de QA (com o nome do status aplicado) — ou aviso se não foi possível
