@@ -62,13 +62,15 @@ Use `mcp__Jira__createIssueLink` com:
 - `inwardIssue`: chave do ticket Project criado
 - `outwardIssue`: chave da issue original
 
-### 7. Adicionar plano de teste na descrição do ticket
+### 7. Adicionar conteúdo de validação na descrição do ticket
 
-Verifique se a issue original possui um plano de teste na descrição (seção como "Test Plan", "Plano de Teste" ou similar).
+Prioridade na escolha do conteúdo da descrição (use o primeiro que existir):
 
-**Se houver:** copie o conteúdo do plano de teste e cole na descrição do ticket Project criado, usando `mcp__Jira__editJiraIssue` com `contentFormat: "adf"`.
+1. **Critérios de aceite** — procure por seções "Critérios de Aceite", "Critérios de Aceitação", "Acceptance Criteria" ou listas de checkboxes `[ ]` na descrição da issue original. **Esta é sempre a opção preferida quando existir.** Formate como um `taskList` ADF (checklist), sob o heading `Critérios a validar`. Não pergunte ao usuário — use diretamente.
+2. **Test Plan / Plano de Teste** — se não houver AC, use a seção "Test Plan" ou "Plano de Teste" se existir na issue original.
+3. **Gerar via /jira-testes** — se não houver AC nem Test Plan, invoque `/jira-testes [ISSUE-KEY]` para gerar um plano de teste e cole na descrição.
 
-**Se não houver:** invoque a skill `/jira-testes` passando a chave da issue original para gerar um plano de teste. Após a geração, cole o resultado na descrição do ticket Project criado da mesma forma.
+Ao preencher, crie a descrição já na criação do ticket (passo 5) usando `contentFormat: "adf"`. Se preferir, pode preencher depois via `mcp__Jira__editJiraIssue`.
 
 ### 8. Confirmar ao usuário
 
