@@ -1,6 +1,6 @@
 ---
 name: criar-bug
-description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original e marca "Need fix". Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
+description: Registra um bug de acordo com o time da tarefa. Time Travel (TRPO e similares): comenta na tarefa original e marca "Need fix". Time Onhappy (DLT, CHEER): cria ticket Fix no projeto TEST vinculado ao card. Bug avulso no backlog OnHappy Web: cria Bug direto no projeto CHEER, sem vínculo. Aceita chave da issue como argumento (ex: /criar-bug PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
@@ -17,6 +17,7 @@ Antes de qualquer ação, verifique o prefixo da issue:
 
 - Se o projeto for **DLT** ou **CHEER** → seguir o **Fluxo Onhappy** (abaixo)
 - Se o projeto for **TRPO** ou outro projeto do time **Travel** → seguir o **Fluxo Travel (Padrão)** (abaixo)
+- Se o usuário pedir um **bug avulso no backlog do OnHappy Web** (ex: "abrir bug no backlog onhappy web", "criar bug no CHEER sem vincular") sem referenciar uma issue existente → seguir o **Fluxo Backlog OnHappy Web (CHEER)** (abaixo)
 
 ---
 
@@ -252,3 +253,83 @@ Informe tudo que foi feito:
 - Confirmação de que o screenshot foi anexado ao ticket Fix (ou aviso se não foi possível/informado)
 - Confirmação de que "Need fix" foi marcado na tarefa original (somente CHEER) ou aviso se não foi possível
 - Confirmação de que o responsável foi mencionado no ticket Fix
+
+---
+
+## Fluxo Backlog OnHappy Web (CHEER) — bug avulso no backlog
+
+Usar quando o usuário pedir para abrir um bug **direto no backlog** do OnHappy Web, sem vínculo com nenhum card existente.
+
+### 1. Coletar o relato do bug
+Pergunte ao usuário:
+
+> "Descreva o bug encontrado. Pode incluir:
+> - O que aconteceu (comportamento atual)
+> - O que era esperado (comportamento esperado)
+> - Passos para reproduzir
+> - Ambiente/contexto (ex: navegador, dispositivo, dados usados)
+> - Qualquer outra informação relevante
+> - Print/screenshot (informe o caminho do arquivo, se tiver)"
+
+Aguarde o relato antes de continuar.
+
+### 2. Gerar a descrição do bug
+Gere a descrição em **ADF** com as seções abaixo, na ordem:
+
+1. Parágrafo inicial com resumo claro do problema em 1-2 frases — **sem subtítulo "Descrição"**
+2. `Comportamento atual` (heading 3) + bullet list
+3. `Comportamento esperado` (heading 3) + bullet list
+4. `Passo a passo de reprodução` (heading 3) + bullet list
+5. `Ambiente` (heading 3) + bullet list — **somente se o usuário informou**. Omita a seção inteira caso contrário.
+
+Preencha apenas as seções que o usuário informou. Não inclua seções vazias.
+
+### 3. Confirmar antes de registrar
+Apresente a descrição gerada ao usuário e pergunte:
+
+> "Deseja criar esse Bug no backlog do OnHappy Web (projeto CHEER)?"
+
+Aguarde a confirmação. Só prossiga se o usuário confirmar.
+
+### 4. Criar o Bug no projeto CHEER
+Use `mcp__Jira__createJiraIssue` com:
+- **Projeto**: CHEER
+- **Tipo de issue**: Bug
+- **Título (summary)**: resumo objetivo do defeito, derivado do relato do usuário. **NÃO** incluir chave de outra issue no título (ex: `[DLT-170]`).
+- **Descrição**: o conteúdo ADF gerado no passo 2 (use `contentFormat: "adf"`)
+- **Campo "Prioridade"**: **não preencher** a menos que o usuário indique explicitamente. Deixar o valor padrão.
+
+Salve a chave da nova issue criada (ex: `CHEER-XXXX`).
+
+### 4.5 Verificar e limpar template padrão na descrição
+Após a criação, use `mcp__Jira__getJiraIssue` para buscar a issue criada e inspecione o campo `description`.
+
+Se o conteúdo contiver **marcadores de template** — padrões como:
+- Placeholders entre chaves duplas (`{{ ... }}`)
+- Blocos de heading típicos do template de Bug no CHEER (ex: "Descrição do erro encontrado", "Comportamento esperado", "Pontos de atenção") acompanhados de texto placeholder
+
+Então use `mcp__Jira__editJiraIssue` para **sobrescrever** o campo `description` com o ADF gerado no passo 2.
+
+Se a descrição já contiver apenas o texto do bug (sem placeholders), pule este passo.
+
+### 5. Anexar arquivo ao Bug (opcional)
+Se o usuário informou um print/screenshot/vídeo, anexe-o ao Bug criado via Bash tool:
+
+```bash
+WINPATH=$(cygpath -w "/c/caminho/para/arquivo") && curl -s -X POST \
+  "https://api.atlassian.com/ex/jira/24479377-75bf-4543-a6f6-0a189a0ec825/rest/api/3/issue/{CHEER-XXXX}/attachments" \
+  -H "Authorization: Basic $(printf '%s' "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" | base64 -w 0)" \
+  -H "X-Atlassian-Token: no-check" \
+  -F "file=@\"$WINPATH\";type={MIME_TYPE}"
+```
+
+Use `cygpath -w` no Windows/Git Bash. Detecte o MIME pelo formato (`.png`→`image/png`, `.jpg`→`image/jpeg`, `.mp4`→`video/mp4`, etc.). Nunca interpole `$ATLASSIAN_EMAIL` ou `$ATLASSIAN_TOKEN` em texto visível.
+
+Se o curl retornar erro, informe e continue o fluxo.
+
+### 6. Confirmar ao usuário
+Informe:
+- Chave e link do Bug criado (ex: `https://onflylabs.atlassian.net/browse/CHEER-XXXX`)
+- Se o template da descrição foi detectado e substituído (ou se já estava limpo)
+- Se o arquivo foi anexado (ou aviso caso não tenha sido possível / não informado)
+- Observação: criado no backlog sem responsável (o time define na priorização), a menos que o usuário tenha indicado um responsável específico
