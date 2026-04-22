@@ -1,6 +1,6 @@
 ---
 name: instalar-apk
-description: Encontra o APK app-release.apk mais recente na pasta Downloads e instala no dispositivo Android conectado via USB. Ao final informa se a instalação foi bem-sucedida e exibe a data/hora do arquivo.
+description: Encontra o APK mais recente (app-release.apk ou variantes como "app-release (N).apk") na pasta Downloads e instala no dispositivo Android conectado via USB. Ao final informa se a instalação foi bem-sucedida e exibe a data/hora do arquivo.
 argument-hint: ""
 ---
 
@@ -28,7 +28,7 @@ Para que esta skill rode sem prompts de confirmação, adicione ao `~/.claude/se
 
 ## O que essa skill faz
 1. Busca o APK mais recente no Google Drive do usuário
-2. Se não encontrar no Drive, localiza o `app-release.apk` mais recente na pasta Downloads
+2. Se não encontrar no Drive, localiza o APK mais recente na pasta Downloads (considera `app-release.apk` e variantes como `app-release (1).apk`, `app-release (2).apk`, etc.)
 3. Verifica se há um dispositivo Android conectado via USB (ADB)
 4. Desinstala a versão anterior do app, se houver
 5. Instala o APK no dispositivo
@@ -78,11 +78,13 @@ Use a ferramenta `mcp__claude_ai_Google_Drive__search_files` para buscar o arqui
 
 ### 3.2 — Buscar na pasta Downloads (fallback)
 
-Se não encontrou no Drive, procure localmente:
+Se não encontrou no Drive, procure localmente. O padrão cobre `app-release.apk` e variantes com sufixo numérico do navegador (ex.: `app-release (1).apk`):
 
 ```bash
-find ~/Downloads -name "app-release.apk" -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | awk '{print $2}'
+find ~/Downloads -maxdepth 2 \( -name "app-release.apk" -o -name "app-release (*).apk" \) -printf "%T@ %p\n" 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-
 ```
+
+O arquivo escolhido é sempre o de maior `mtime`, independente do sufixo no nome.
 
 Se nenhum arquivo for encontrado em nenhuma das fontes, informe o usuário e peça que confirme o nome e local do arquivo.
 
