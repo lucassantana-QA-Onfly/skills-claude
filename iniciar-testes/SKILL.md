@@ -62,15 +62,15 @@ Use `mcp__Jira__createIssueLink` com:
 - `inwardIssue`: chave do ticket Project criado
 - `outwardIssue`: chave da issue original
 
-### 7. Adicionar conteúdo de validação na descrição do ticket
+### 7. Gerar e anexar casos de teste no Project
 
-Prioridade na escolha do conteúdo da descrição (use o primeiro que existir):
+**Sempre** invocar `/jira-testes [ISSUE-KEY]` para gerar os casos de teste estruturados (técnicas: equivalência, valor limite, erro, regressão, exploratórios, etc.), **independentemente** da issue original ter AC ou não.
 
-1. **Critérios de aceite** — procure por seções "Critérios de Aceite", "Critérios de Aceitação", "Acceptance Criteria" ou listas de checkboxes `[ ]` na descrição da issue original. **Esta é sempre a opção preferida quando existir.** Formate como um `taskList` ADF (checklist), sob o heading `Critérios a validar`. Não pergunte ao usuário — use diretamente.
-2. **Test Plan / Plano de Teste** — se não houver AC, use a seção "Test Plan" ou "Plano de Teste" se existir na issue original.
-3. **Gerar via /jira-testes** — se não houver AC nem Test Plan, invoque `/jira-testes [ISSUE-KEY]` para gerar um plano de teste e cole na descrição.
+**Regra obrigatória:** os casos gerados devem ser anexados **no ticket Project (TEST-XX) criado neste fluxo**, e **NÃO** na issue original. A tarefa original permanece limpa (apenas com o smart link do Project gerado pelo vínculo do passo 6).
 
-Ao preencher, crie a descrição já na criação do ticket (passo 5) usando `contentFormat: "adf"`. Se preferir, pode preencher depois via `mcp__Jira__editJiraIssue`.
+Não incluir checklist de critérios na descrição do Project — apenas os casos de teste gerados via `/jira-testes`.
+
+Fluxo: criar Project vazio no passo 5 → vincular no passo 6 → invocar `/jira-testes` → anexar retorno via `mcp__Jira__editJiraIssue` na descrição do Project (ADF) ou via `mcp__Jira__addCommentToJiraIssue` no Project.
 
 ### 8. Transicionar a issue original para validação de QA
 

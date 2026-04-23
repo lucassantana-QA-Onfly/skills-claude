@@ -99,29 +99,36 @@ Exiba:
 1. As técnicas escolhidas e a justificativa para cada uma
 2. Todos os casos de teste gerados, ordenados por criticidade (Crítica → Alta → Média → Baixa)
 
-### 4. Perguntar antes de anexar
+### 4. Identificar alvo do anexo (Project vs issue original)
+
+**Regra obrigatória:** casos de teste devem ser anexados no ticket **Project** (Sessão de Testes — TEST-XX) vinculado à issue, e **NÃO** na issue original (DLT/CHEER/TRPO/etc).
+
+Localizar o Project:
+1. Inspecione `issuelinks` da issue original e procure por issue com `issuetype.name === "Project"` (summary típico: `Sessão de Testes — <ISSUE-KEY>: <Título>`).
+2. Se houver Project vinculado → usar sua chave como alvo do anexo (ex: `TEST-62`).
+3. Se **não** houver Project vinculado → avisar o usuário e sugerir rodar `/iniciar-testes [ISSUE-KEY]` antes. Não anexar na issue original.
+
+### 5. Perguntar antes de anexar
 **SEMPRE** pergunte ao usuário antes de qualquer ação no Jira:
 
-> "Deseja que eu anexe esses casos de teste na card **[ISSUE-KEY]**?"
+> "Deseja que eu anexe esses casos de teste no Project **[PROJECT-KEY]** (Sessão de Testes da **[ISSUE-KEY]**)?"
 
 Aguarde a confirmação. Só prossiga se o usuário confirmar.
 
-### 5. Anexar casos de teste na card (somente após confirmação)
+### 6. Anexar casos de teste no Project (somente após confirmação)
 
-**5a. Verificar campos disponíveis**
-Use `mcp__Jira__getJiraIssueTypeMetaWithFields` para verificar os campos da issue.
-Procure por um campo chamado "Caso de testes (QA)" ou similar (`customfield_*`).
+**6a. Verificar campos disponíveis no Project**
+Use `mcp__Jira__getJiraIssueTypeMetaWithFields` (projeto TEST, issuetype `Project`) para verificar campos. Procure por um campo chamado "Caso de testes (QA)" ou similar (`customfield_*`).
 
-**5b. Se o campo "Caso de testes (QA)" existir:**
-Use `mcp__Jira__editJiraIssue` para atualizar esse campo com os casos de teste.
+**6b. Se o campo "Caso de testes (QA)" existir no Project:**
+Use `mcp__Jira__editJiraIssue` no **Project** para atualizar esse campo.
 
-**5c. Se o campo NÃO existir:**
-Use `mcp__Jira__addCommentToJiraIssue` para adicionar os casos de teste como 
-comentário na issue, com o cabeçalho:
+**6c. Se o campo NÃO existir:**
+Use `mcp__Jira__editJiraIssue` para sobrescrever a `description` do Project com os casos (ADF), OU use `mcp__Jira__addCommentToJiraIssue` no **Project** adicionando os casos como comentário.
 
-> **📋 Casos de Teste (QA)**
-> _Campo "Caso de testes (QA)" não encontrado. Casos adicionados via comentário._
+**Nunca** anexar os casos na issue original — a tarefa original permanece limpa, com apenas o smart link do Project.
 
-### 6. Confirmar ao usuário
-Informe o que foi feito:
-- Se os casos de teste foram adicionados ao campo ou ao comentário
+### 7. Confirmar ao usuário
+Informe:
+- Em qual ticket Project (TEST-XX) os casos foram anexados
+- Se foram adicionados em campo customizado, descrição ou comentário
