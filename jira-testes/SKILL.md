@@ -59,6 +59,30 @@ Use essas informações para enriquecer a análise e gerar casos de teste mais c
 
 > Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
 
+### 1d. Consultar Confluence OnHappy (obrigatório antes de gerar casos)
+
+**Regra obrigatória:** sempre consultar o espaço Confluence OnHappy antes de gerar os casos de teste, para enriquecer entendimento de fluxos, regras de negócio e como reproduzir o que será testado.
+
+- **Espaço:** OnHappy — https://onflylabs.atlassian.net/wiki/spaces/OnHappy/overview
+- **cloudId:** `24479377-75bf-4543-a6f6-0a189a0ec825`
+
+Passos:
+1. Use `mcp__Jira__searchConfluenceUsingCql` com `space = "OnHappy"` filtrando por termos extraídos do título/descrição/AC da issue (módulo afetado, entidade, fluxo, integração — ex: "luna", "hotel", "wallet", "approval").
+2. Para resultados promissores, leia com `mcp__Jira__getConfluencePage` (`contentFormat: "markdown"`) e extraia: regras de negócio, pré-condições, fluxos passo a passo, dados de exemplo, integrações envolvidas.
+3. Páginas-chave já mapeadas (consultar quando o tema bater):
+   - **Fluxos & Regras de negócio** — `640680814`
+   - **Jornadas chaves do colaborador** — `640680327`
+   - **Padrões de Projeto** — `640679944`
+   - **Frontend Onhappy** — `640680037`
+   - **Backend Onhappy** — `640680787`
+   - **Architecture Decision Records** — `640681401`
+   - **Luna V3** — `640680737`
+   - **Fluxo de BUG** — `640680563`
+   - **Fluxo de Incidentes** — `640680530`
+4. Se a informação não estiver no Confluence, declare explicitamente "não encontrei no espaço OnHappy" e siga com base no card.
+
+Use o conteúdo encontrado para enriquecer pré-condições, passos e resultado esperado dos casos.
+
 ### 2. Escolher as técnicas de teste
 Antes de gerar os casos, analise o conteúdo da issue e selecione as técnicas mais adequadas ao contexto. Informe ao usuário quais técnicas foram escolhidas e por quê.
 
