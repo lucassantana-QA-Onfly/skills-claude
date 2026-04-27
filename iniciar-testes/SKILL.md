@@ -15,6 +15,8 @@ Invocado com chave explícita (`/iniciar-testes PROJ-123`) ou sem argumento — 
 Use `mcp__Jira__getJiraIssue` para buscar a issue. Extraia e guarde:
 - Chave da issue (ex: `DLT-123`)
 - Título (summary)
+- **Resumo do problema** (1–3 linhas extraídas da descrição/contexto)
+- **Resultado esperado** (critério de aceite principal ou comportamento esperado)
 
 ### 2. Identificar o usuário que está invocando a skill
 Use `mcp__Jira__atlassianUserInfo` para obter os dados do usuário autenticado. Guarde o `accountId` para usar como responsável no ticket Project.
@@ -48,6 +50,11 @@ Use `mcp__Jira__createJiraIssue` com os seguintes campos:
 - **summary**: `Sessão de Testes — [ISSUE-KEY]: [título da issue original]`
 - **assignee**: `accountId` obtido no passo 2
 - **customfield_11756**: valor numérico do E total em horas (apenas o número, sem "h")
+- **description** (ADF): apenas duas seções, nesta ordem:
+  1. Heading **"Resumo do problema"** + parágrafo com o resumo extraído no passo 1.
+  2. Heading **"Resultado esperado"** + parágrafo com o resultado esperado extraído no passo 1.
+
+  Não incluir casos de teste, checklist de AC, passo a passo de reprodução, links extras nem outras seções na descrição. Casos de teste serão anexados separadamente no passo 7.
 - **Categorias** (`customfield_*` correspondente): defina o valor conforme o projeto da issue original:
   - Issue do projeto **DLT** → valor `onhappy-mobile`
   - Issue do projeto **CHEER** → valor `onhappy-web`
