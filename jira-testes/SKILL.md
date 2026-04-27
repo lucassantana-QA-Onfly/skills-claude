@@ -77,13 +77,13 @@ Antes de gerar os casos, analise o conteúdo da issue e selecione as técnicas m
 ### 3. Gerar os casos de teste
 Com base na análise e nas técnicas selecionadas, gere os casos de teste evitando redundâncias — não crie dois testes que cobrem exatamente a mesma classe de equivalência ou o mesmo ponto de decisão.
 
-**Ordene os casos por criticidade**, do mais crítico ao menos crítico:
+**Ordene os casos por criticidade**, do mais crítico ao menos crítico (regra obrigatória, vale para qualquer formato — padrão, Gherkin, docx, comentário Jira):
 1. Crítica
 2. Alta
 3. Média
 4. Baixa
 
-**Formato de cada caso de teste:**
+**Formato padrão de cada caso de teste:**
 ```
 **CT-XX: [Nome descritivo]**
 - **Prioridade**: Crítica | Alta | Média | Baixa
@@ -93,6 +93,18 @@ Com base na análise e nas técnicas selecionadas, gere os casos de teste evitan
   2. ...
 - **Resultado esperado**: [o que deve acontecer]
 ```
+
+**Formato Gherkin (quando o usuário pedir Gherkin/`.feature`/docx Gherkin):**
+
+Gere bloco único `Funcionalidade:` com `Contexto:` quando aplicável e cada caso como `Cenário:` (ou `Esquema do Cenário:` para tabelas de exemplos).
+
+Regras:
+- **Ordenar por prioridade decrescente** (Crítico → Alto → Médio → Baixo) — mesma regra do formato padrão.
+- Separar grupos por comentário `# ===== CRÍTICO =====`, `# ===== ALTO =====`, etc.
+- Tag de prioridade acima de cada cenário: `@critico`, `@alto`, `@medio`, `@baixo`.
+- Usar `Dado / Quando / Então / E` em português.
+- Strings de UI, status e identificadores entre aspas duplas.
+- Não incluir passos de implementação técnica que não sejam observáveis pelo QA.
 
 ### 4. Apresentar os casos de teste ao usuário
 Exiba:
