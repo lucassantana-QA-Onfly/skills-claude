@@ -37,7 +37,7 @@ Exiba um resumo do que será criado:
 - **Título:** `Sessão de Testes — [ISSUE-KEY]: [título da issue]`
 - **Responsável:** nome do usuário identificado no passo 2
 - **Effort:** valor em horas obtido no passo 3
-- **Vínculo:** "relates to" com [ISSUE-KEY]
+- **Vínculo:** Project **tests** [ISSUE-KEY] (tipo "Tests")
 
 Pergunte se pode prosseguir antes de executar qualquer ação no Jira.
 
@@ -64,20 +64,21 @@ Use `mcp__Jira__createJiraIssue` com os seguintes campos:
 
 ### 6. Vincular o Project à issue original
 
-Use `mcp__Jira__createIssueLink` com:
-- Tipo: `"relates to"` (ou o tipo disponível mais próximo)
-- `inwardIssue`: chave do ticket Project criado
-- `outwardIssue`: chave da issue original
+Use `mcp__Jira__createIssueLink` com tipo **"Tests"** (direção: o Project **tests** a issue original):
+- Tipo: `"Tests"` (se não existir, usar `mcp__Jira__getIssueLinkTypes` para descobrir o nome correto do link "tests / is tested by"; cair em `"Relates"` apenas se nenhum tipo de teste estiver disponível)
+- `inwardIssue`: chave do ticket Project criado (lado que **testa**)
+- `outwardIssue`: chave da issue original (lado que **é testado**)
 
-### 7. Gerar e anexar casos de teste no Project
+> Se a relação no Jira for invertida (inward = "is tested by"), troque os campos para manter a semântica "Project tests Tarefa original".
 
-**Sempre** invocar `/jira-testes [ISSUE-KEY]` para gerar os casos de teste estruturados (técnicas: equivalência, valor limite, erro, regressão, exploratórios, etc.), **independentemente** da issue original ter AC ou não.
+### 7. Anexar plano de teste via `/jira-testes`
 
-**Regra obrigatória:** os casos gerados devem ser anexados **no ticket Project (TEST-XX) criado neste fluxo**, e **NÃO** na issue original. A tarefa original permanece limpa (apenas com o smart link do Project gerado pelo vínculo do passo 6).
+Invoque `/jira-testes [ISSUE-KEY]` e delegue toda a responsabilidade de gerar e anexar o conteúdo de teste ao ticket Project. A própria skill `/jira-testes` cuida de:
+- Gerar o plano (escopo, valor entregue, abordagem)
+- Localizar o Project vinculado
+- Anexar no Project (descrição ou comentário)
 
-Não incluir checklist de critérios na descrição do Project — apenas os casos de teste gerados via `/jira-testes`.
-
-Fluxo: criar Project vazio no passo 5 → vincular no passo 6 → invocar `/jira-testes` → anexar retorno via `mcp__Jira__editJiraIssue` na descrição do Project (ADF) ou via `mcp__Jira__addCommentToJiraIssue` no Project.
+Não duplicar a lógica aqui — apenas chamar a skill.
 
 ### 8. Transicionar a issue original para validação de QA
 

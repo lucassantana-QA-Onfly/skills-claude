@@ -1,15 +1,17 @@
 ---
 name: jira-testes
-description: Consulta uma demanda no Jira, gera casos de teste (QA) e anexa na card. Aceita chave da issue como argumento (ex: /jira-testes PROJ-123) ou detecta pelo contexto.
+description: Consulta uma demanda no Jira e gera um plano de teste (escopo, valor entregue, abordagem). Não escreve casos de teste — descreve o que será testado, o valor do teste e como testar. Aceita chave da issue como argumento (ex: /jira-testes PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
-# Skill: Gerador de Casos de Teste QA
+# Skill: Plano de Teste QA
 
 ## Como usar
-Invocado com chave explícita (`/jira-testes PROJ-123`) ou sem argumento — neste 
-caso, identifique a issue pelo contexto da conversa. Se não conseguir identificar, 
+Invocado com chave explícita (`/jira-testes PROJ-123`) ou sem argumento — neste
+caso, identifique a issue pelo contexto da conversa. Se não conseguir identificar,
 peça ao usuário a chave da issue.
+
+> **Importante:** esta skill **não escreve casos de teste detalhados** (passo a passo, pré-condições, resultado esperado de cada cenário). Ela produz um **plano de teste** com três blocos: escopo (o que será testado), valor entregue (por que vale a pena testar) e abordagem (como testar).
 
 ## Passo a passo
 
@@ -29,7 +31,7 @@ curl -s -L -u "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" "[attachment_content_url]" -o 
 ```
 Em seguida use `Read` no caminho `/tmp/jira_img_[id].png` para visualizar e extrair contexto visual.
 
-Use o conteúdo das imagens para enriquecer a análise da issue antes de gerar os casos de teste.
+Use o conteúdo das imagens para enriquecer o plano de teste.
 
 ### 1c. Acessar links do Figma (se houver)
 
@@ -47,29 +49,25 @@ Se encontrar um ou mais links do Figma, para cada link:
 **b) Acesse o design com `mcp__claude_ai_Figma__get_design_context`** passando `fileKey` e `nodeId`.
 Se não houver nodeId, use apenas o fileKey.
 
-**c) Extraia informações relevantes para o teste:**
-- Fluxos de navegação e transições de tela
-- Estados dos componentes (vazio, carregado, erro, loading, disabled, hover, etc.)
-- Campos de formulário, validações visuais e mensagens de erro/sucesso
-- Variações de layout (mobile x desktop, se houver)
-- Anotações do designer (notas, restrições, regras descritas no Figma)
-- Comportamentos esperados descritos nos protótipos
-
-Use essas informações para enriquecer a análise e gerar casos de teste mais completos e precisos.
+**c) Extraia informações relevantes para o plano:**
+- Telas e fluxos principais
+- Estados dos componentes (vazio, carregado, erro, loading, disabled, etc.)
+- Pontos de validação visual (mensagens, breakpoints, variações mobile/desktop)
+- Anotações do designer com regras ou restrições
 
 > Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
 
-### 1d. Consultar Confluence OnHappy (obrigatório antes de gerar casos)
+### 1d. Consultar Confluence OnHappy (obrigatório)
 
-**Regra obrigatória:** sempre consultar o espaço Confluence OnHappy antes de gerar os casos de teste, para enriquecer entendimento de fluxos, regras de negócio e como reproduzir o que será testado.
+**Regra obrigatória:** sempre consultar o espaço Confluence OnHappy antes de gerar o plano, para enriquecer entendimento de fluxos, regras de negócio e contexto do que será validado.
 
 - **Espaço:** OnHappy — https://onflylabs.atlassian.net/wiki/spaces/OnHappy/overview
 - **cloudId:** `24479377-75bf-4543-a6f6-0a189a0ec825`
 
 Passos:
-1. Use `mcp__Jira__searchConfluenceUsingCql` com `space = "OnHappy"` filtrando por termos extraídos do título/descrição/AC da issue (módulo afetado, entidade, fluxo, integração — ex: "luna", "hotel", "wallet", "approval").
-2. Para resultados promissores, leia com `mcp__Jira__getConfluencePage` (`contentFormat: "markdown"`) e extraia: regras de negócio, pré-condições, fluxos passo a passo, dados de exemplo, integrações envolvidas.
-3. Páginas-chave já mapeadas (consultar quando o tema bater):
+1. Use `mcp__Jira__searchConfluenceUsingCql` com `space = "OnHappy"` filtrando por termos extraídos do título/descrição/AC da issue.
+2. Para resultados promissores, leia com `mcp__Jira__getConfluencePage` (`contentFormat: "markdown"`) e extraia regras de negócio, integrações envolvidas, dados de exemplo.
+3. Páginas-chave já mapeadas:
    - **Fluxos & Regras de negócio** — `640680814`
    - **Jornadas chaves do colaborador** — `640680327`
    - **Padrões de Projeto** — `640679944`
@@ -79,92 +77,83 @@ Passos:
    - **Luna V3** — `640680737`
    - **Fluxo de BUG** — `640680563`
    - **Fluxo de Incidentes** — `640680530`
-4. Se a informação não estiver no Confluence, declare explicitamente "não encontrei no espaço OnHappy" e siga com base no card.
+4. Se a informação não estiver no Confluence, declare "não encontrei no espaço OnHappy" e siga com base no card.
 
-Use o conteúdo encontrado para enriquecer pré-condições, passos e resultado esperado dos casos.
+### 2. Gerar o plano de teste
 
-### 2. Escolher as técnicas de teste
-Antes de gerar os casos, analise o conteúdo da issue e selecione as técnicas mais adequadas ao contexto. Informe ao usuário quais técnicas foram escolhidas e por quê.
+O plano deve ter exatamente **três blocos**, nesta ordem:
 
-**Técnicas disponíveis:**
+#### 2.1 — O que será testado (Escopo)
+Descreva, de forma objetiva, **quais áreas, fluxos, regras ou comportamentos** entram no escopo desta validação. Inclua:
+- Funcionalidades/telas/endpoints alvo
+- Fluxos principais e variações relevantes
+- Regras de negócio impactadas
+- Plataformas/dispositivos/navegadores cobertos (quando aplicável)
+- O que **fica fora** do escopo (explicitar exclusões evita ambiguidade)
 
-- **Particionamento de Equivalência**: use quando há entradas ou condições que podem ser agrupadas em classes válidas e inválidas. Evita duplicar testes dentro da mesma classe. _Aplicar quando houver campos de entrada, tipos de usuário, status, categorias._
+> Não detalhe casos passo a passo. Foco em delimitar superfície de teste.
 
-- **Análise de Valor Limite**: use em conjunto com particionamento quando os limites entre classes são críticos (valores mínimos, máximos, logo abaixo e logo acima). _Aplicar quando houver campos numéricos, datas, quantidades, limites de caracteres._
+#### 2.2 — Valor entregue pelo teste
+Explique **por que testar isso importa**. Conecte o teste a risco, qualidade ou objetivo de produto. Inclua:
+- Risco mitigado caso a validação seja feita (ex: regressão em fluxo crítico, bug em produção, vazamento de dado, queda de receita)
+- Impacto no usuário final ou no negócio se o defeito passar
+- Confiança ganha para release/decisão (ex: "valida correção do logout antes de promover para prod")
+- Áreas de regressão protegidas
 
-- **Tabela de Decisão**: use quando há combinações de condições que produzem resultados diferentes. _Aplicar quando houver regras de negócio com múltiplos critérios simultâneos, fluxos condicionais complexos._
+> Foco em "por que vale a pena gastar X horas testando isso".
 
-- **Fluxo principal + alternativos**: sempre inclua o happy path e as variações válidas, independentemente das técnicas escolhidas.
+#### 2.3 — Como testar (Abordagem)
+Descreva **como a validação será conduzida**. Inclua:
+- Estratégia geral (manual, automatizado, exploratório, regressão dirigida)
+- Técnicas aplicáveis (particionamento, valor limite, tabela de decisão, fluxo + alternativos, erro/exceção, exploratório)
+- Ambiente(s) (homol, prod, staging) e dados de teste necessários
+- Ferramentas (Postman/Bruno, ADB, BrowserStack, Charles, dispositivos físicos, etc.)
+- Pré-condições gerais (acessos, contas, configs) — sem virar receita passo a passo
+- Critério de saída (quando consideramos "testado")
 
-- **Casos de erro/exceção**: sempre inclua cenários de falha, permissão negada, dados inválidos.
+> Mantenha em nível de plano. Não escreva casos de teste estruturados (CT-XX).
 
-### 3. Gerar os casos de teste
-Com base na análise e nas técnicas selecionadas, gere os casos de teste evitando redundâncias — não crie dois testes que cobrem exatamente a mesma classe de equivalência ou o mesmo ponto de decisão.
+### 3. Formato de saída
 
-**Ordene os casos por criticidade**, do mais crítico ao menos crítico (regra obrigatória, vale para qualquer formato — padrão, Gherkin, docx, comentário Jira):
-1. Crítica
-2. Alta
-3. Média
-4. Baixa
+```markdown
+# Plano de Teste — [ISSUE-KEY]: [Título da issue]
 
-**Formato padrão de cada caso de teste:**
+## O que será testado
+[parágrafo + bullets do escopo]
+
+## Valor entregue pelo teste
+[parágrafo + bullets do valor / risco mitigado]
+
+## Como testar
+[parágrafo descrevendo abordagem + bullets com técnicas, ambiente, ferramentas, dados, critério de saída]
 ```
-**CT-XX: [Nome descritivo]**
-- **Prioridade**: Crítica | Alta | Média | Baixa
-- **Pré-condições**: [o que precisa estar configurado/existir antes]
-- **Passos**:
-  1. ...
-  2. ...
-- **Resultado esperado**: [o que deve acontecer]
-```
 
-**Formato Gherkin (quando o usuário pedir Gherkin/`.feature`/docx Gherkin):**
+### 4. Apresentar ao usuário
+Exiba o plano completo no formato acima. **Não inclua casos de teste estruturados (CT-XX) nem cenários Gherkin.** Se o usuário pedir explicitamente casos detalhados, redirecione: "esta skill produz plano de teste; para cenários estruturados, peça explicitamente."
 
-Gere bloco único `Funcionalidade:` com `Contexto:` quando aplicável e cada caso como `Cenário:` (ou `Esquema do Cenário:` para tabelas de exemplos).
+### 5. Identificar alvo do anexo (Project vs issue original)
 
-Regras:
-- **Ordenar por prioridade decrescente** (Crítico → Alto → Médio → Baixo) — mesma regra do formato padrão.
-- Separar grupos por comentário `# ===== CRÍTICO =====`, `# ===== ALTO =====`, etc.
-- Tag de prioridade acima de cada cenário: `@critico`, `@alto`, `@medio`, `@baixo`.
-- Usar `Dado / Quando / Então / E` em português.
-- Strings de UI, status e identificadores entre aspas duplas.
-- Não incluir passos de implementação técnica que não sejam observáveis pelo QA.
-
-### 4. Apresentar os casos de teste ao usuário
-Exiba:
-1. As técnicas escolhidas e a justificativa para cada uma
-2. Todos os casos de teste gerados, ordenados por criticidade (Crítica → Alta → Média → Baixa)
-
-### 4. Identificar alvo do anexo (Project vs issue original)
-
-**Regra obrigatória:** casos de teste devem ser anexados no ticket **Project** (Sessão de Testes — TEST-XX) vinculado à issue, e **NÃO** na issue original (DLT/CHEER/TRPO/etc).
+**Regra obrigatória:** o plano deve ser anexado no ticket **Project** (Sessão de Testes — TEST-XX) vinculado à issue, e **NÃO** na issue original (DLT/CHEER/TRPO/etc).
 
 Localizar o Project:
 1. Inspecione `issuelinks` da issue original e procure por issue com `issuetype.name === "Project"` (summary típico: `Sessão de Testes — <ISSUE-KEY>: <Título>`).
 2. Se houver Project vinculado → usar sua chave como alvo do anexo (ex: `TEST-62`).
 3. Se **não** houver Project vinculado → avisar o usuário e sugerir rodar `/iniciar-testes [ISSUE-KEY]` antes. Não anexar na issue original.
 
-### 5. Perguntar antes de anexar
+### 6. Perguntar antes de anexar
 **SEMPRE** pergunte ao usuário antes de qualquer ação no Jira:
 
-> "Deseja que eu anexe esses casos de teste no Project **[PROJECT-KEY]** (Sessão de Testes da **[ISSUE-KEY]**)?"
+> "Deseja que eu anexe esse plano de teste no Project **[PROJECT-KEY]** (Sessão de Testes da **[ISSUE-KEY]**)?"
 
 Aguarde a confirmação. Só prossiga se o usuário confirmar.
 
-### 6. Anexar casos de teste no Project (somente após confirmação)
+### 7. Anexar plano no Project (somente após confirmação)
 
-**6a. Verificar campos disponíveis no Project**
-Use `mcp__Jira__getJiraIssueTypeMetaWithFields` (projeto TEST, issuetype `Project`) para verificar campos. Procure por um campo chamado "Caso de testes (QA)" ou similar (`customfield_*`).
+Use `mcp__Jira__editJiraIssue` para sobrescrever a `description` do Project com o plano (ADF), OU use `mcp__Jira__addCommentToJiraIssue` no **Project** adicionando o plano como comentário.
 
-**6b. Se o campo "Caso de testes (QA)" existir no Project:**
-Use `mcp__Jira__editJiraIssue` no **Project** para atualizar esse campo.
+**Nunca** anexar na issue original — a tarefa original permanece limpa, apenas com o smart link do Project.
 
-**6c. Se o campo NÃO existir:**
-Use `mcp__Jira__editJiraIssue` para sobrescrever a `description` do Project com os casos (ADF), OU use `mcp__Jira__addCommentToJiraIssue` no **Project** adicionando os casos como comentário.
-
-**Nunca** anexar os casos na issue original — a tarefa original permanece limpa, com apenas o smart link do Project.
-
-### 7. Confirmar ao usuário
+### 8. Confirmar ao usuário
 Informe:
-- Em qual ticket Project (TEST-XX) os casos foram anexados
-- Se foram adicionados em campo customizado, descrição ou comentário
+- Em qual ticket Project (TEST-XX) o plano foi anexado
+- Se foi adicionado em descrição ou comentário

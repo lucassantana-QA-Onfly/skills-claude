@@ -186,16 +186,18 @@ Salve a chave e o **summary (título)** da nova issue criada para uso nos próxi
 
 Quando o ticket Fix já existir (informado pelo usuário), use `mcp__Jira__getJiraIssue` para buscar o título real do ticket antes de enviar a notificação.
 
-### 5.1 Vincular o Fix ao Project de testes
-Use `mcp__Jira__createIssueLink` com tipo **"Relates"** entre o Fix recém-criado e o **Project** salvo no passo 1 (ex: `TEST-39`).
+### 5.1 Vincular o Fix ao Project de testes (Error blocks Project)
+Use `mcp__Jira__createIssueLink` com tipo **"Blocks"** entre o Fix (Error) recém-criado e o **Project** salvo no passo 1 (ex: `TEST-39`). Direção semântica: o **Erro bloqueia o Project** de testes.
 
 **Importante:** o link estrutural é entre Fix ↔ Project de testes, **não** entre Fix ↔ tarefa original. A tarefa original recebe apenas o smart link (inlineCard) como comentário, mas o vínculo de `issuelinks` fica com o Project.
 
 ```
-inwardIssue: <chave do Fix criado>
-outwardIssue: <chave do Project de testes>
-type: "Relates"
+inwardIssue: <chave do Fix/Error criado>   # lado que bloqueia
+outwardIssue: <chave do Project de testes>  # lado bloqueado
+type: "Blocks"
 ```
+
+> Se a relação no Jira tiver direção invertida (inward = "is blocked by"), troque os campos para manter a semântica "Error blocks Project".
 
 ### 5.5 Anexar arquivo ao ticket Fix (opcional)
 Se o usuário informou um arquivo (imagem ou vídeo) no relato, anexe-o ao **ticket Fix criado** via Bash tool:
