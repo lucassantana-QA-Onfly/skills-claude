@@ -81,7 +81,16 @@ Passos:
 
 ### 2. Gerar o plano de teste
 
-O plano deve ter exatamente **três blocos**, nesta ordem:
+O plano deve ter exatamente **quatro blocos**, nesta ordem: Motivação & Risco, O que será testado, Valor entregue, Como testar.
+
+#### 2.0 — Motivação & Risco (fundamento do teste)
+Bloco que **fundamenta por que o teste existe**. Conecta o defeito/feature ao impacto real e expõe os riscos que justificam a validação. Inclua:
+- **Motivação:** o que provocou a demanda — bug em produção, regressão, nova feature, requisito legal/compliance, débito técnico, incidente, feedback de usuário
+- **Risco se não testar:** o que pode quebrar, vazar, gerar perda financeira, prejudicar UX, quebrar SLA, parar fluxo crítico
+- **Probabilidade x Impacto:** classificação leve (baixa/média/alta) p/ cada — orienta priorização do testador
+- **Áreas adjacentes em risco:** componentes, fluxos ou integrações que podem ser afetados como efeito colateral
+
+> Foco em "por que estamos investindo esforço aqui e o que está em jogo".
 
 #### 2.1 — O que será testado (Escopo)
 Descreva, de forma objetiva, **quais áreas, fluxos, regras ou comportamentos** entram no escopo desta validação. Inclua:
@@ -116,6 +125,9 @@ Dê **só o trilho** para o testador executar — sem prescrever técnicas forma
 ```markdown
 # Plano de Teste — [ISSUE-KEY]: [Título da issue]
 
+## Motivação & Risco
+[bullets: Motivação, Risco se não testar, Probabilidade x Impacto, Áreas adjacentes em risco]
+
 ## O que será testado
 [parágrafo + bullets do escopo]
 
@@ -123,7 +135,7 @@ Dê **só o trilho** para o testador executar — sem prescrever técnicas forma
 [parágrafo + bullets do valor / risco mitigado]
 
 ## Como testar
-[parágrafo descrevendo abordagem + bullets com técnicas, ambiente, ferramentas, dados, critério de saída]
+[bullets curtos: Ambiente, Dados/Pré-condições, Pontos de atenção, Critério de saída]
 ```
 
 ### 4. Apresentar ao usuário
@@ -154,9 +166,10 @@ A descrição final deve ser sobrescrita preservando "Resumo do problema" e "Res
 1. `heading` nível 2 — `Resumo do problema` + `paragraph` com o resumo
 2. `heading` nível 2 — `Resultado esperado` + `paragraph` com o resultado esperado
 3. `rule` (separador horizontal)
-4. `heading` nível 2 — `O que será testado` + `bulletList` com os itens de escopo (incluir bullet "Fora do escopo:" no final)
-5. `heading` nível 2 — `Valor entregue pelo teste` + `bulletList` com os itens de valor
-6. `heading` nível 2 — `Como testar` + `bulletList` curto com: Ambiente, Dados/Pré-condições, Pontos de atenção (cenários de borda, regressão, fluxos vizinhos), Critério de saída. **Não** listar técnicas formais.
+4. `heading` nível 2 — `Motivação & Risco` + `bulletList` com: Motivação, Risco se não testar, Probabilidade x Impacto, Áreas adjacentes em risco
+5. `heading` nível 2 — `O que será testado` + `bulletList` com os itens de escopo (incluir bullet "Fora do escopo:" no final)
+6. `heading` nível 2 — `Valor entregue pelo teste` + `bulletList` com os itens de valor
+7. `heading` nível 2 — `Como testar` + `bulletList` curto com: Ambiente, Dados/Pré-condições, Pontos de atenção (cenários de borda, regressão, fluxos vizinhos), Critério de saída. **Não** listar técnicas formais.
 
 Não usar parágrafos longos dentro dos blocos do plano — apenas bullets curtos. Evitar comentário, sempre sobrescrever descrição.
 
