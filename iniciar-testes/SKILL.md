@@ -71,16 +71,76 @@ Use `mcp__Jira__createIssueLink` com tipo **"Tests"** (direção: o Project **te
 
 > Se a relação no Jira for invertida (inward = "is tested by"), troque os campos para manter a semântica "Project tests Tarefa original".
 
-### 7. Anexar plano de teste via `/jira-testes`
+### 7. Criar pipeline de ambiente de review no GitLab
+
+Após criar o Project e o vínculo, suba um ambiente de review automatizado disparando uma pipeline no repositório `onflylabs/onhappy/review`.
+
+#### 7.1 — Calcular o `name` do ambiente
+Pegue a chave da issue original e normalize:
+- Lowercase
+- Remover qualquer caractere que não seja `[a-z0-9]` (hífens, espaços, símbolos)
+- Ex: `CHEER-3060` → `cheer3060`, `DLT-170` → `dlt170`
+
+#### 7.2 — Identificar branches Frontend e Backend
+Localize as branches de desenvolvimento vinculadas à issue original (aba **Desenvolvimento → Ramificações** no Jira, alimentada pelo GitLab dev panel).
+
+1. Tente extrair as branches via dev panel da issue (campo `customfield_10000` / development summary) ou via `mcp__claude_ai_Gitlab_MCP__search` filtrando por chave da issue.
+2. Mapeie por projeto GitLab:
+   - **OnHappy Frontend** → valor da variável `frontend`
+   - **OnHappy Backend** → valor da variável `backend`
+3. Se a issue só tem branch em um dos lados (só Frontend ou só Backend), o lado ausente recebe o valor padrão `main`.
+4. Se nenhum lado tiver branch, avise o usuário e pare — não criar pipeline sem nenhuma branch de feature, pois subiria um ambiente igual à main.
+
+#### 7.3 — Perguntar estratégia de dados
+Pergunte ao usuário:
+> "Reutilizar o banco de dados da main neste ambiente de review? (sim/não)"
+
+- **Sim** → adicionar variável `DATA_STRATEGY=reuse` à pipeline.
+- **Não** → não enviar `DATA_STRATEGY` (deixar vazio / ausente).
+
+#### 7.4 — Confirmar configuração antes de criar
+Mostre ao usuário um resumo:
+- **Repo:** `onflylabs/onhappy/review`
+- **Branch da pipeline:** `main`
+- **name:** `[name calculado]`
+- **frontend:** `[branch ou main]`
+- **backend:** `[branch ou main]`
+- **DATA_STRATEGY:** `reuse` ou `(omitido)`
+
+Aguarde confirmação. Só prossiga se confirmar.
+
+#### 7.5 — Disparar a pipeline
+Use `mcp__claude_ai_Gitlab_MCP__manage_pipeline` (action `create`) no projeto `onflylabs/onhappy/review`, branch `main`, passando as variáveis acima como inputs.
+
+> URL do projeto: https://gitlab.com/onflylabs/onhappy/review
+> URL da listagem de pipelines: https://gitlab.com/onflylabs/onhappy/review/-/pipelines
+
+#### 7.6 — Aguardar a pipeline finalizar
+Faça polling do status da pipeline (via `mcp__claude_ai_Gitlab_MCP__get_pipeline_jobs` ou refetch via `manage_pipeline`) até `status` ser `success`, `failed` ou `canceled`.
+
+- Se **success** → seguir para 7.7.
+- Se **failed/canceled** → informar o usuário com o link da pipeline e parar (não anexar URL nem prosseguir para o próximo passo).
+
+#### 7.7 — Anexar URL do ambiente no Project
+Monte a URL do ambiente deployado:
+```
+https://app.<name>.review.onhappy.com.br
+```
+Anexe como comentário ADF no Project (TEST-XX) via `mcp__Jira__addCommentToJiraIssue` com `contentFormat: "adf"`. Estrutura do body:
+1. `heading` nível 2 — `Ambiente de review`
+2. `paragraph` com link clicável: `https://app.<name>.review.onhappy.com.br`
+3. `paragraph` opcional com link da pipeline GitLab usada para deploy
+
+### 8. Anexar plano de teste via `/jira-testes`
 
 Invoque `/jira-testes [ISSUE-KEY]` e delegue toda a responsabilidade de gerar e anexar o conteúdo de teste ao ticket Project. A própria skill `/jira-testes` cuida de:
 - Gerar o plano (escopo, valor entregue, abordagem)
 - Localizar o Project vinculado
-- Anexar no Project (descrição ou comentário)
+- Anexar no Project (descrição)
 
 Não duplicar a lógica aqui — apenas chamar a skill.
 
-### 8. Transicionar a issue original para validação de QA
+### 9. Transicionar a issue original para validação de QA
 
 Após todos os passos anteriores concluídos com sucesso, mova a **issue original** para a coluna de validação de QA.
 
@@ -91,11 +151,12 @@ Após todos os passos anteriores concluídos com sucesso, mova a **issue origina
 4. Se houver **múltiplas** candidatas, prefira nesta ordem: `QA VALIDATION` > `In Validation` > `Em Validação` > `In Testing` > `Em Teste`. Informe ao usuário qual foi aplicada.
 5. Se **não** houver nenhuma transição compatível, informe o usuário (com a lista de transições disponíveis) em vez de falhar silenciosamente — não aplique nenhuma transição nesse caso.
 
-### 9. Confirmar ao usuário
+### 10. Confirmar ao usuário
 
 Informe de forma resumida:
 - Chave e link do ticket Project criado
 - Que o vínculo com a issue original foi registrado
 - Que o campo Effort foi preenchido com o valor em horas
+- URL do ambiente de review deployado (`https://app.<name>.review.onhappy.com.br`) ou aviso se a pipeline falhou
 - Que a descrição foi preenchida com critérios de aceite / plano de teste
 - Que a issue original foi movida para a coluna de validação de QA (com o nome do status aplicado) — ou aviso se não foi possível
