@@ -11,7 +11,7 @@ Invocado com chave explícita (`/jira-testes PROJ-123`) ou sem argumento — nes
 caso, identifique a issue pelo contexto da conversa. Se não conseguir identificar,
 peça ao usuário a chave da issue.
 
-> **Importante:** esta skill **não escreve casos de teste detalhados** (passo a passo, pré-condições, resultado esperado de cada cenário). Ela produz um **plano de teste** com três blocos: escopo (o que será testado), valor entregue (por que vale a pena testar) e abordagem (como testar).
+> **Importante:** esta skill **não escreve casos de teste detalhados** nem lista técnicas formais. Ela entrega um **trilho de teste** — o suficiente para guiar a execução sem prender a criatividade do testador. Foco em execução, não em produzir artefato. Três blocos: escopo (o que testar), valor entregue (por que importa) e como testar (trilho leve).
 
 ## Passo a passo
 
@@ -102,16 +102,14 @@ Explique **por que testar isso importa**. Conecte o teste a risco, qualidade ou 
 
 > Foco em "por que vale a pena gastar X horas testando isso".
 
-#### 2.3 — Como testar (Abordagem)
-Descreva **como a validação será conduzida**. Inclua:
-- Estratégia geral (manual, automatizado, exploratório, regressão dirigida)
-- Técnicas aplicáveis (particionamento, valor limite, tabela de decisão, fluxo + alternativos, erro/exceção, exploratório)
-- Ambiente(s) (homol, prod, staging) e dados de teste necessários
-- Ferramentas (Postman/Bruno, ADB, BrowserStack, Charles, dispositivos físicos, etc.)
-- Pré-condições gerais (acessos, contas, configs) — sem virar receita passo a passo
-- Critério de saída (quando consideramos "testado")
+#### 2.3 — Como testar (Trilho)
+Dê **só o trilho** para o testador executar — sem prescrever técnicas formais nem caminhar passo a passo. A ideia é orientar e provocar exploração, não engessar. Inclua:
+- Ambiente(s) onde validar (homol, review, staging, prod)
+- Dados de teste relevantes / pré-condições mínimas (acessos, contas, configs)
+- Pontos de atenção / áreas onde a criatividade do testador deve atuar (cenários de borda, regressão prevista, fluxos vizinhos)
+- Critério de saída (quando se considera testado)
 
-> Mantenha em nível de plano. Não escreva casos de teste estruturados (CT-XX).
+> **Não** listar técnicas (particionamento, valor limite, tabela de decisão etc.). **Não** escrever casos de teste. **Não** virar receita. O testador decide como executar.
 
 ### 3. Formato de saída
 
@@ -149,11 +147,22 @@ Aguarde a confirmação. Só prossiga se o usuário confirmar.
 
 ### 7. Anexar plano no Project (somente após confirmação)
 
-Use `mcp__Jira__editJiraIssue` para sobrescrever a `description` do Project com o plano (ADF), OU use `mcp__Jira__addCommentToJiraIssue` no **Project** adicionando o plano como comentário.
+**Regra obrigatória:** anexar sempre na **descrição** do Project via `mcp__Jira__editJiraIssue` com `contentFormat: "adf"`. **Nunca** usar `addCommentToJiraIssue` para o plano.
+
+A descrição final deve ser sobrescrita preservando "Resumo do problema" e "Resultado esperado" no topo, seguidos do plano separado por tópicos. Estrutura obrigatória (em ADF):
+
+1. `heading` nível 2 — `Resumo do problema` + `paragraph` com o resumo
+2. `heading` nível 2 — `Resultado esperado` + `paragraph` com o resultado esperado
+3. `rule` (separador horizontal)
+4. `heading` nível 2 — `O que será testado` + `bulletList` com os itens de escopo (incluir bullet "Fora do escopo:" no final)
+5. `heading` nível 2 — `Valor entregue pelo teste` + `bulletList` com os itens de valor
+6. `heading` nível 2 — `Como testar` + `bulletList` curto com: Ambiente, Dados/Pré-condições, Pontos de atenção (cenários de borda, regressão, fluxos vizinhos), Critério de saída. **Não** listar técnicas formais.
+
+Não usar parágrafos longos dentro dos blocos do plano — apenas bullets curtos. Evitar comentário, sempre sobrescrever descrição.
 
 **Nunca** anexar na issue original — a tarefa original permanece limpa, apenas com o smart link do Project.
 
 ### 8. Confirmar ao usuário
 Informe:
 - Em qual ticket Project (TEST-XX) o plano foi anexado
-- Se foi adicionado em descrição ou comentário
+- Confirme que foi adicionado na descrição (sempre)
