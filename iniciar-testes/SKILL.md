@@ -50,11 +50,7 @@ Use `mcp__Jira__createJiraIssue` com os seguintes campos:
 - **summary**: `Sessão de Testes — [ISSUE-KEY]: [título da issue original]`
 - **assignee**: `accountId` obtido no passo 2
 - **customfield_11756**: valor numérico do E total em horas (apenas o número, sem "h")
-- **description** (ADF): apenas duas seções, nesta ordem:
-  1. Heading **"Resumo do problema"** + parágrafo com o resumo extraído no passo 1.
-  2. Heading **"Resultado esperado"** + parágrafo com o resultado esperado extraído no passo 1.
-
-  Não incluir casos de teste, checklist de AC, passo a passo de reprodução, links extras nem outras seções na descrição. Casos de teste serão anexados separadamente no passo 7.
+- **description**: **NÃO** preencher neste passo. A descrição será gerada e anexada exclusivamente pela skill `/jira-testes` no passo 7. Crie o ticket sem o campo `description` (ou com string vazia).
 - **Categorias** (`customfield_*` correspondente): defina o valor conforme o projeto da issue original:
   - Issue do projeto **DLT** → valor `onhappy-mobile`
   - Issue do projeto **CHEER** → valor `onhappy-web`
@@ -71,17 +67,28 @@ Use `mcp__Jira__createIssueLink` com tipo **"Tests"** (direção: o Project **te
 
 > Se a relação no Jira for invertida (inward = "is tested by"), troque os campos para manter a semântica "Project tests Tarefa original".
 
-### 7. Criar pipeline de ambiente de review no GitLab
+### 7. Gerar e anexar a descrição via `/jira-testes` (obrigatório, sempre)
+
+**Regra obrigatória:** a descrição do Project é gerada **sempre** pela skill `/jira-testes` — nunca pelo `/iniciar-testes` diretamente. Este passo acontece **logo após** criar o Project e o vínculo, antes de qualquer ação de pipeline.
+
+Invoque `/jira-testes [ISSUE-KEY]` (chave da issue **original**, não a do Project). A própria skill cuida de:
+- Localizar o Project vinculado (TEST-XX)
+- Gerar o plano (Motivação & Risco, Escopo, Valor, Como testar)
+- Anexar tudo na descrição do Project (sobrescrevendo, com Resumo do problema + Resultado esperado no topo)
+
+Não duplicar a lógica aqui — apenas chamar a skill e aguardar a confirmação de anexação. Se o usuário recusar a anexação no fluxo do `/jira-testes`, **pare** e avise — o Project ficará sem descrição até que rode `/jira-testes` manualmente.
+
+### 8. Criar pipeline de ambiente de review no GitLab
 
 Após criar o Project e o vínculo, suba um ambiente de review automatizado disparando uma pipeline no repositório `onflylabs/onhappy/review`.
 
-#### 7.1 — Calcular o `name` do ambiente
+#### 8.1 — Calcular o `name` do ambiente
 Pegue a chave da issue original e normalize:
 - Lowercase
 - Remover qualquer caractere que não seja `[a-z0-9]` (hífens, espaços, símbolos)
 - Ex: `CHEER-3060` → `cheer3060`, `DLT-170` → `dlt170`
 
-#### 7.2 — Identificar branches Frontend e Backend
+#### 8.2 — Identificar branches Frontend e Backend
 Localize as branches de desenvolvimento vinculadas à issue original (aba **Desenvolvimento → Ramificações** no Jira, alimentada pelo GitLab dev panel).
 
 1. Tente extrair as branches via dev panel da issue (campo `customfield_10000` / development summary) ou via `mcp__claude_ai_Gitlab_MCP__search` filtrando por chave da issue.
@@ -91,14 +98,14 @@ Localize as branches de desenvolvimento vinculadas à issue original (aba **Dese
 3. Se a issue só tem branch em um dos lados (só Frontend ou só Backend), o lado ausente recebe o valor padrão `main`.
 4. Se nenhum lado tiver branch, avise o usuário e pare — não criar pipeline sem nenhuma branch de feature, pois subiria um ambiente igual à main.
 
-#### 7.3 — Perguntar estratégia de dados
+#### 8.3 — Perguntar estratégia de dados
 Pergunte ao usuário:
 > "Reutilizar o banco de dados da main neste ambiente de review? (sim/não)"
 
 - **Sim** → adicionar variável `DATA_STRATEGY=reuse` à pipeline.
 - **Não** → não enviar `DATA_STRATEGY` (deixar vazio / ausente).
 
-#### 7.4 — Confirmar configuração antes de criar
+#### 8.4 — Confirmar configuração antes de criar
 Mostre ao usuário um resumo:
 - **Repo:** `onflylabs/onhappy/review`
 - **Branch da pipeline:** `main`
@@ -109,19 +116,66 @@ Mostre ao usuário um resumo:
 
 Aguarde confirmação. Só prossiga se confirmar.
 
-#### 7.5 — Disparar a pipeline
-Use `mcp__claude_ai_Gitlab_MCP__manage_pipeline` (action `create`) no projeto `onflylabs/onhappy/review`, branch `main`, passando as variáveis acima como inputs.
+#### 8.5 — Disparar a pipeline (via curl + variável de ambiente)
+
+**Não usar o MCP `manage_pipeline`** — o parâmetro `variables` desse MCP está quebrado e rejeita qualquer formato, impedindo o envio de `DATA_STRATEGY`. Disparar sempre via `curl` direto na API do GitLab usando o PAT da variável de ambiente do usuário.
+
+Variável de ambiente esperada (User scope no Windows):
+- `GITLAB_PERSONAL_ACCESS_TOKEN` — PAT com escopo `api`
+
+> **Nunca** interpolar o token em texto, logs ou URLs. Sempre passá-lo via header `PRIVATE-TOKEN` lendo direto de `$env:GITLAB_PERSONAL_ACCESS_TOKEN` (PowerShell) ou `[Environment]::GetEnvironmentVariable('GITLAB_PERSONAL_ACCESS_TOKEN','User')` quando a variável não estiver herdada na sessão.
+
+Comando PowerShell (preferencial neste ambiente):
+
+```powershell
+$pat = [Environment]::GetEnvironmentVariable('GITLAB_PERSONAL_ACCESS_TOKEN','User')
+$body = @{
+  ref       = 'main'
+  inputs    = @{ name = '<name>'; frontend = '<branch ou main>'; backend = '<branch ou main>' }
+  variables = @(@{ key = 'DATA_STRATEGY'; value = 'reuse' })  # remova esta linha se DATA_STRATEGY foi descartado em 8.3
+} | ConvertTo-Json -Depth 5 -Compress
+Invoke-RestMethod -Method Post `
+  -Uri 'https://gitlab.com/api/v4/projects/onflylabs%2Fonhappy%2Freview/pipeline' `
+  -Headers @{ 'PRIVATE-TOKEN' = $pat; 'Content-Type' = 'application/json' } `
+  -Body $body | ConvertTo-Json -Depth 5
+```
+
+Equivalente em bash/curl (caso a sessão estiver em shell POSIX e o PAT já exportado):
+
+```bash
+curl --silent --show-error --fail \
+  --header "PRIVATE-TOKEN: $GITLAB_PERSONAL_ACCESS_TOKEN" \
+  --header "Content-Type: application/json" \
+  --data '{"ref":"main","inputs":{"name":"<name>","frontend":"<branch>","backend":"<branch>"},"variables":[{"key":"DATA_STRATEGY","value":"reuse"}]}' \
+  "https://gitlab.com/api/v4/projects/onflylabs%2Fonhappy%2Freview/pipeline"
+```
+
+Da resposta JSON, guardar `id` (pipeline_id) e `web_url` para os próximos sub-passos.
+
+Tratamento de erros comuns:
+- **`insufficient_scope`** → o PAT não tem escopo `api` completo. Avisar o usuário e parar — não tentar workaround.
+- **Variável de ambiente ausente** → avisar o usuário para configurar `GITLAB_PERSONAL_ACCESS_TOKEN` no escopo User do Windows e rodar de novo.
 
 > URL do projeto: https://gitlab.com/onflylabs/onhappy/review
 > URL da listagem de pipelines: https://gitlab.com/onflylabs/onhappy/review/-/pipelines
 
-#### 7.6 — Aguardar a pipeline finalizar
-Faça polling do status da pipeline (via `mcp__claude_ai_Gitlab_MCP__get_pipeline_jobs` ou refetch via `manage_pipeline`) até `status` ser `success`, `failed` ou `canceled`.
+#### 8.6 — Aguardar a pipeline finalizar
 
-- Se **success** → seguir para 7.7.
-- Se **failed/canceled** → informar o usuário com o link da pipeline e parar (não anexar URL nem prosseguir para o próximo passo).
+Polling do status da pipeline pelo `pipeline_id` retornado em 8.5, via curl + PAT:
 
-#### 7.7 — Anexar URL do ambiente no Project
+```powershell
+$pat = [Environment]::GetEnvironmentVariable('GITLAB_PERSONAL_ACCESS_TOKEN','User')
+Invoke-RestMethod -Method Get `
+  -Uri "https://gitlab.com/api/v4/projects/onflylabs%2Fonhappy%2Freview/pipelines/<pipeline_id>" `
+  -Headers @{ 'PRIVATE-TOKEN' = $pat }
+```
+
+Repetir até `status` ser `success`, `failed` ou `canceled`.
+
+- Se **success** → seguir para 8.7.
+- Se **failed/canceled** → informar o usuário com `web_url` da pipeline e parar (não anexar URL nem prosseguir para o próximo passo).
+
+#### 8.7 — Anexar URL do ambiente no Project
 Monte a URL do ambiente deployado:
 ```
 https://app.<name>.review.onhappy.com.br
@@ -130,15 +184,6 @@ Anexe como comentário ADF no Project (TEST-XX) via `mcp__Jira__addCommentToJira
 1. `heading` nível 2 — `Ambiente de review`
 2. `paragraph` com link clicável: `https://app.<name>.review.onhappy.com.br`
 3. `paragraph` opcional com link da pipeline GitLab usada para deploy
-
-### 8. Anexar plano de teste via `/jira-testes`
-
-Invoque `/jira-testes [ISSUE-KEY]` e delegue toda a responsabilidade de gerar e anexar o conteúdo de teste ao ticket Project. A própria skill `/jira-testes` cuida de:
-- Gerar o plano (escopo, valor entregue, abordagem)
-- Localizar o Project vinculado
-- Anexar no Project (descrição)
-
-Não duplicar a lógica aqui — apenas chamar a skill.
 
 ### 9. Transicionar a issue original para validação de QA
 
