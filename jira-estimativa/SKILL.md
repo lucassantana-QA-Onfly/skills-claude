@@ -14,7 +14,7 @@ peça ao usuário a chave da issue.
 ## Passo a passo
 
 ### 1. Buscar a issue
-Use `mcp__Jira__getJiraIssue` para buscar a issue. Extraia e guarde:
+Use `Atlassian:getJiraIssue` para buscar a issue. Extraia e guarde:
 - Título e descrição
 - Critérios de aceitação
 - Tipo da issue (Story, Bug, Task, Sub-task etc.)
@@ -36,7 +36,7 @@ Use o conteúdo das imagens para enriquecer a análise antes de gerar a estimati
 
 Verifique se a issue contém links do Figma. Procure em:
 1. **Descrição da issue**: busque por URLs com padrão `figma.com/design/`, `figma.com/board/` ou `figma.com/make/`
-2. **Remote links**: use `mcp__Jira__getJiraIssueRemoteIssueLinks` para listar links externos da issue — filtre por URLs de Figma
+2. **Remote links**: use `Atlassian:getJiraIssueRemoteIssueLinks` para listar links externos da issue — filtre por URLs de Figma
 
 Se encontrar um ou mais links do Figma, para cada link:
 
@@ -163,7 +163,7 @@ Ao final, informe:
 
 Após exibir a estimativa, pergunte ao usuário se deseja registrar no Jira antes de prosseguir.
 
-Se confirmar, crie um ticket do tipo **Project** no projeto **TEST** usando `mcp__Jira__createJiraIssue` com os seguintes campos:
+Se confirmar, crie um ticket do tipo **Project** no projeto **TEST** usando `Atlassian:createJiraIssue` com os seguintes campos:
 
 - **project**: `TEST`
 - **issuetype**: `Project` (id `11106`)
@@ -171,7 +171,7 @@ Se confirmar, crie um ticket do tipo **Project** no projeto **TEST** usando `mcp
 - **customfield_11756**: valor numérico do **E total** (soma de todos os E da tabela PERT, em horas — use apenas o número, sem "h")
 - **description** (ADF): inclua o bloco completo da estimativa gerada no passo 5, formatado em ADF. Use parágrafos, headings e uma tabela ADF para reproduzir a tabela PERT.
 
-Após criar o ticket, vincule-o à issue original usando `mcp__Jira__createIssueLink` com o tipo **"relates to"** (ou o tipo disponível mais próximo), sendo:
+Após criar o ticket, vincule-o à issue original usando `Atlassian:createIssueLink` com o tipo **"relates to"** (ou o tipo disponível mais próximo), sendo:
 - `inwardIssue`: chave do ticket Project criado
 - `outwardIssue`: chave da issue original analisada
 
