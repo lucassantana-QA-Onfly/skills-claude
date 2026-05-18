@@ -1,6 +1,6 @@
 ---
 name: jira-estimativa
-description: Consulta uma demanda no Jira e gera uma estimativa de tempo e esforço de teste (QA) usando a técnica de três pontos. Após exibir o resultado, cria um ticket do tipo Project no projeto TEST com o campo Effort preenchido. Aceita chave da issue como argumento (ex: /jira-estimativa PROJ-123) ou detecta pelo contexto.
+description: Consulta uma demanda no Jira e gera uma estimativa de tempo e esforço de teste (QA) usando a técnica de três pontos. Após exibir o resultado, cria um ticket do tipo Project no projeto TEST com o campo Story point estimate preenchido em pontos (escala Fibonacci a partir do E total em horas). Aceita chave da issue como argumento (ex: /jira-estimativa PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
 ---
 
@@ -159,16 +159,30 @@ Exiba a estimativa completa conforme o formato acima.
 Ao final, informe:
 > "Estimativa gerada com base na análise da issue usando a técnica de três pontos (PERT). Caso queira gerar os casos de teste detalhados, use `/jira-testes [ISSUE-KEY]`."
 
-### 7. Criar ticket Project no projeto TEST com o Effort preenchido
+### 7. Criar ticket Project no projeto TEST com o Story point estimate preenchido
 
 Após exibir a estimativa, pergunte ao usuário se deseja registrar no Jira antes de prosseguir.
+
+**Converter horas em Story Points (escala Fibonacci):** a partir do **E total** (soma de todos os E da tabela PERT, em horas), use a tabela abaixo:
+
+| E total (horas) | Story Points |
+|---|---|
+| ≤ 2h | 1 |
+| ≤ 4h | 2 |
+| ≤ 8h | 3 |
+| ≤ 16h | 5 |
+| ≤ 32h | 8 |
+| ≤ 56h | 13 |
+| > 56h | 21 |
+
+**Descobrir o ID do campo Story point estimate:** use `Atlassian:getJiraIssueTypeMetaWithFields` no projeto **TEST** para o tipo **Project** (id `11106`) e localize o `customfield_*` cujo nome é **"Story point estimate"** (ou variação como "Story Points").
 
 Se confirmar, crie um ticket do tipo **Project** no projeto **TEST** usando `Atlassian:createJiraIssue` com os seguintes campos:
 
 - **project**: `TEST`
 - **issuetype**: `Project` (id `11106`)
 - **summary**: `Estimativa — [ISSUE-KEY]: [Título da issue]`
-- **customfield_11756**: valor numérico do **E total** (soma de todos os E da tabela PERT, em horas — use apenas o número, sem "h")
+- **Story point estimate** (`customfield_*` descoberto acima): valor numérico em pontos obtido pela conversão Fibonacci (apenas o número, sem "pts")
 - **description** (ADF): inclua o bloco completo da estimativa gerada no passo 5, formatado em ADF. Use parágrafos, headings e uma tabela ADF para reproduzir a tabela PERT.
 
 Após criar o ticket, vincule-o à issue original usando `Atlassian:createIssueLink` com o tipo **"relates to"** (ou o tipo disponível mais próximo), sendo:
