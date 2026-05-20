@@ -53,7 +53,7 @@ Exiba um resumo do que será criado:
 - **Título:** `Sessão de Testes — [ISSUE-KEY]: [título da issue]`
 - **Responsável:** nome do usuário identificado no passo 2
 - **Story Points:** valor em pontos obtido no passo 3b (indique também o E total em horas que originou o ponto)
-- **Vínculo:** "relates to" com [ISSUE-KEY]
+- **Vínculo:** "tests" → [ISSUE-KEY] (tipo Test)
 
 Pergunte se pode prosseguir antes de executar qualquer ação no Jira.
 
@@ -76,9 +76,9 @@ Use `Atlassian:createJiraIssue` com os seguintes campos:
 ### 6. Vincular o Project à issue original
 
 Use `Atlassian:createIssueLink` com:
-- Tipo: `"relates to"` (ou o tipo disponível mais próximo)
-- `inwardIssue`: chave do ticket Project criado
-- `outwardIssue`: chave da issue original
+- Tipo: `"Test"` (outward: "tests") — o Evaluation **tests** a tarefa original
+- `inwardIssue`: chave da issue original (é "tested by")
+- `outwardIssue`: chave do ticket Evaluation criado (é quem "tests")
 
 ### 7. Adicionar plano de teste na descrição do ticket
 
