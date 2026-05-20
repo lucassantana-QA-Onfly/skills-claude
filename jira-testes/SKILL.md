@@ -60,8 +60,21 @@ Use essas informações para enriquecer a análise.
 
 > Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
 
-### 1d. Consultar Confluence OnHappy (se contexto OnHappy)
-Para issues dos projetos OnHappy (CHEER, DLT, TRPO etc.), consulte o espaço OnHappy no Confluence quando houver dúvida sobre regra de negócio, fluxo ou padrão. Confluence é fonte de verdade para esse contexto.
+### 1d. Consultar Confluence OnHappy (OBRIGATÓRIO para projetos OnHappy)
+
+Para issues dos projetos OnHappy (CHEER, DLT, TRPO etc.), **sempre** consulte o espaço OnHappy no Confluence antes de gerar o plano de teste. O Confluence é a fonte de verdade para regras de negócio, fluxos e padrões do produto.
+
+**Como consultar:**
+1. Acesse a visão geral do espaço: `https://onflylabs.atlassian.net/wiki/spaces/OnHappy/overview`
+2. Use `Atlassian:searchConfluenceUsingCql` com `space.key = "OnHappy"` buscando pelos termos-chave da issue (ex.: nome da feature, módulo afetado, fluxo descrito).
+3. Leia as páginas mais relevantes com `Atlassian:getConfluencePage`.
+4. Extraia e use no plano:
+   - Regras de negócio que a issue implementa ou modifica
+   - Fluxos existentes que podem ser afetados (regressão)
+   - Definições de termos do produto (ex.: o que é Wallet, como cupons funcionam)
+   - Restrições ou comportamentos documentados que não estão na issue
+
+> Não pule esse passo mesmo que a issue pareça simples — o Confluence frequentemente revela regras implícitas que enriquecem os cenários de teste e os pontos de atenção.
 
 ### 1e. Consultar GitLab (se houver MR/branch vinculado)
 Se a issue tiver MR/branch vinculado, considere invocar `/gitlab-impacto` ou consultar diretamente para entender a mudança real de código antes de descrever ambiente e pontos de atenção.
