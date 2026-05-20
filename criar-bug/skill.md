@@ -301,16 +301,12 @@ Use `Atlassian:createJiraIssue` com:
 
 Salve a chave da nova issue criada (ex: `CHEER-XXXX`).
 
-### 4.5 Verificar e limpar template padrão na descrição
-Após a criação, use `Atlassian:getJiraIssue` para buscar a issue criada e inspecione o campo `description`.
+### 4.5 Sobrescrever o template padrão da descrição (OBRIGATÓRIO)
+O projeto CHEER injeta automaticamente um template na descrição ao criar qualquer issue. **Sempre** sobrescreva a descrição após a criação, independentemente do conteúdo atual.
 
-Se o conteúdo contiver **marcadores de template** — padrões como:
-- Placeholders entre chaves duplas (`{{ ... }}`)
-- Blocos de heading típicos do template de Bug no CHEER (ex: "Descrição do erro encontrado", "Comportamento esperado", "Pontos de atenção") acompanhados de texto placeholder
+Use `Atlassian:editJiraIssue` com `contentFormat: "adf"` para **sobrescrever** o campo `description` com o ADF gerado no passo 2.
 
-Então use `Atlassian:editJiraIssue` para **sobrescrever** o campo `description` com o ADF gerado no passo 2.
-
-Se a descrição já contiver apenas o texto do bug (sem placeholders), pule este passo.
+> Não é necessário buscar a issue antes para verificar — o template é sempre injetado. Execute o edit direto.
 
 ### 5. Anexar arquivo ao Bug (opcional)
 Se o usuário informou um print/screenshot/vídeo, anexe-o ao Bug criado via Bash tool:
