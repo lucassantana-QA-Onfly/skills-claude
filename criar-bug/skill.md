@@ -175,7 +175,7 @@ Aguarde a confirmação. Só prossiga se o usuário confirmar.
 ### 5. Criar o ticket Fix no projeto TEST
 Use `Atlassian:createJiraIssue` para criar uma nova issue com:
 - **Projeto**: TEST
-- **Tipo de issue**: Fix (ou o tipo mais próximo disponível — use `Atlassian:getJiraProjectIssueTypesMetadata` para verificar os tipos disponíveis no projeto TEST)
+- **Tipo de issue**: **Error** (usar sempre este tipo — não chamar `getJiraProjectIssueTypesMetadata`)
 - **Título (summary)**: resumo objetivo do defeito, derivado do relato do usuário. **NÃO** usar o título da tarefa original. **NÃO** incluir a chave da issue no título (ex: [DLT-170]) — o vínculo já registra essa relação.
 - **Descrição**: apenas comportamento atual, comportamento esperado e ambiente (se informado). **NÃO incluir os passos de reprodução na descrição.**
 - **Campo personalizado `customfield_11690`** ("Passo a passo de reprodução"): preencher com os passos em formato de bullet points. Este campo é **obrigatório** e separado da descrição.
