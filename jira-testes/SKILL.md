@@ -76,8 +76,9 @@ Para issues dos projetos OnHappy (CHEER, DLT, TRPO etc.), **sempre** consulte o 
 
 > Não pule esse passo mesmo que a issue pareça simples — o Confluence frequentemente revela regras implícitas que enriquecem os cenários de teste e os pontos de atenção.
 
-### 1e. Consultar GitLab (se houver MR/branch vinculado)
-Se a issue tiver MR/branch vinculado, considere invocar `/gitlab-impacto` ou consultar diretamente para entender a mudança real de código antes de descrever ambiente e pontos de atenção.
+### 1e. Consultar GitLab — OBRIGATÓRIO se houver MR/branch vinculado
+
+**Sempre** invoque `/gitlab-impacto [ISSUE-KEY]` se a issue tiver MR ou branch vinculado no GitLab. Não pule esse passo mesmo que a descrição técnica do card pareça completa — o diff pode revelar arquivos afetados não mencionados, efeitos colaterais em outros módulos e contexto real da mudança que enriquece os pontos de atenção e os cenários de regressão do plano.
 
 ### 2. Gerar o plano de teste
 
