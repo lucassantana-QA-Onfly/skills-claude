@@ -44,7 +44,7 @@ Pergunte: "Anexar relatório como comentário em [TEST-XX]?" e aguarde confirma�
 Use `mcp__Jira__addCommentToJiraIssue` com `contentFormat: "adf"` e o seguinte body (ADF):
 
 1. `heading` nível 2 — `Relatório de execução`
-2. `paragraph` com texto em formato `Executor: [displayName] · Data: [YYYY-MM-DD]` (use `·` ou `—` como separador)
+2. `paragraph` com texto `Data: [YYYY-MM-DD]` — **não incluir o nome do executor**, pois o comentário já exibe o autor automaticamente
 3. `rule` (separador)
 4. Conteúdo do resumo enviado pelo usuário, preservado:
    - Quebras de linha duplas → parágrafos separados
