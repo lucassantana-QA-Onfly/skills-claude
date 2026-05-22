@@ -52,7 +52,7 @@ Use `mcp__Jira__addCommentToJiraIssue` com `contentFormat: "adf"` e o seguinte b
    - Listas com `1.` `2.` no início da linha → `orderedList` em ADF
    - Texto comum → `paragraph`
 
-Não inserir headings adicionais que o usuário não tenha pedido. Não reescrever o conteúdo — preservar o texto original.
+**Sempre refinar o texto do usuário** antes de formatar em ADF — corrigir gramática, padronizar tempo verbal (passado, 3ª pessoa), deixar o tom profissional e coeso. Não inventar informações, apenas melhorar a redação do que o usuário forneceu. Apresentar a versão refinada ao usuário antes de confirmar o envio.
 
 ### 6. Confirmar ao usuário
 Informe:
