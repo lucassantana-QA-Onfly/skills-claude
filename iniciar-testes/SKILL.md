@@ -77,9 +77,9 @@ Use `Atlassian:createJiraIssue` com os seguintes campos:
 ### 6. Vincular o Project à issue original
 
 Use `Atlassian:createIssueLink` com:
-- Tipo: `"Test"` (outward: "tests") — o Evaluation **tests** a tarefa original
-- `inwardIssue`: chave da issue original (é "tested by")
-- `outwardIssue`: chave do ticket Evaluation criado (é quem "tests")
+- Tipo: `"Test"` — o Evaluation **tests** a tarefa original; a tarefa original **is tested by** o Evaluation
+- `inwardIssue`: chave do ticket Evaluation criado (TEST-XX) — é quem "tests"
+- `outwardIssue`: chave da issue original — é quem "is tested by"
 
 ### 7. Adicionar plano de teste na descrição do ticket
 
