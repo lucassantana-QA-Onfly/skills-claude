@@ -69,6 +69,7 @@ Use `Atlassian:createJiraIssue` com os seguintes campos:
 - **Categorias** (`customfield_*` correspondente): defina o valor conforme o projeto da issue original:
   - Issue do projeto **DLT** → valor `onhappy-mobile`
   - Issue do projeto **CHEER** → valor `onhappy-web`
+  - Issue do projeto **INTR** → use `Atlassian:getJiraIssueTypeMetaWithFields` no projeto TEST para descobrir o ID e os valores disponíveis do campo Categorias; selecione o valor mais adequado para International/Onfly
   - Outros projetos → omitir o campo
 
   > Para descobrir o ID correto do campo e os IDs dos valores, use `Atlassian:getJiraIssueTypeMetaWithFields` no projeto TEST antes de criar o ticket.

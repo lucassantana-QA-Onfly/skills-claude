@@ -15,7 +15,7 @@ peça ao usuário a chave da issue.
 
 Antes de qualquer ação, verifique o prefixo da issue:
 
-- Se o projeto for **DLT** ou **CHEER** → seguir o **Fluxo Onhappy** (abaixo)
+- Se o projeto for **DLT**, **CHEER** ou **INTR** → seguir o **Fluxo Onhappy** (abaixo)
 - Se o projeto for **TRPO** ou outro projeto do time **Travel** → seguir o **Fluxo Travel (Padrão)** (abaixo)
 - Se o usuário pedir um **bug avulso no backlog do OnHappy Web** (ex: "abrir bug no backlog onhappy web", "criar bug no CHEER sem vincular") sem referenciar uma issue existente → seguir o **Fluxo Backlog OnHappy Web (CHEER)** (abaixo)
 
@@ -213,9 +213,9 @@ Não é possível incorporar o arquivo inline no corpo da descrição via API RE
 
 Se o curl retornar erro, informe o usuário e continue o fluxo normalmente.
 
-### 6. Marcar "Need fix" na tarefa original (somente projetos CHEER)
+### 6. Marcar "Need fix" na tarefa original (somente projetos CHEER e INTR)
 
-Se a issue original for do projeto **CHEER**, use `Atlassian:editJiraIssue` para marcar "Need fix" no campo "Checkbox":
+Se a issue original for do projeto **CHEER** ou **INTR**, use `Atlassian:editJiraIssue` para marcar "Need fix" no campo "Checkbox":
 1. Localize o campo Checkbox (busque por `customfield_*` com label "Checkbox")
 2. Adicione "Need fix" à lista de itens marcados, **preservando os já existentes**
 

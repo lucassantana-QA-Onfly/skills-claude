@@ -60,9 +60,11 @@ Use essas informações para enriquecer a análise.
 
 > Se o `mcp__claude_ai_Figma__get_design_context` retornar erro de acesso, capture a screenshot com `mcp__claude_ai_Figma__get_screenshot` e use o conteúdo visual para análise.
 
-### 1d. Consultar Confluence OnHappy (OBRIGATÓRIO para projetos OnHappy)
+### 1d. Consultar Confluence (OBRIGATÓRIO para projetos OnHappy | ignorar para INTR)
 
-Para issues dos projetos OnHappy (CHEER, DLT, TRPO etc.), **sempre** consulte o espaço OnHappy no Confluence antes de gerar o plano de teste. O Confluence é a fonte de verdade para regras de negócio, fluxos e padrões do produto.
+#### Projetos OnHappy (CHEER, DLT, TRPO etc.)
+
+**Sempre** consulte o espaço OnHappy no Confluence antes de gerar o plano de teste. O Confluence é a fonte de verdade para regras de negócio, fluxos e padrões do produto.
 
 **Como consultar:**
 1. Acesse a visão geral do espaço: `https://onflylabs.atlassian.net/wiki/spaces/OnHappy/overview`
@@ -75,6 +77,10 @@ Para issues dos projetos OnHappy (CHEER, DLT, TRPO etc.), **sempre** consulte o 
    - Restrições ou comportamentos documentados que não estão na issue
 
 > Não pule esse passo mesmo que a issue pareça simples — o Confluence frequentemente revela regras implícitas que enriquecem os cenários de teste e os pontos de atenção.
+
+#### Projetos International (INTR)
+
+**Pule a consulta ao Confluence.** Para issues INTR, use apenas o conteúdo da issue, subtarefas, Figma e diff do GitLab para compor o plano. Lembre-se de que o contexto de produto é a plataforma **Onfly** (gestão de viagens corporativas), não o OnHappy — os cenários devem refletir esse domínio (políticas de viagem, aprovações, emissão de bilhetes, relatórios de despesas, integrações com fornecedores, etc.).
 
 ### 1e. Consultar GitLab — OBRIGATÓRIO se houver MR/branch vinculado
 
