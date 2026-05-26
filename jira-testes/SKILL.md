@@ -82,7 +82,19 @@ Use essas informações para enriquecer a análise.
 
 **Pule a consulta ao Confluence.** Para issues INTR, use apenas o conteúdo da issue, subtarefas, Figma e diff do GitLab para compor o plano. Lembre-se de que o contexto de produto é a plataforma **Onfly** (gestão de viagens corporativas), não o OnHappy — os cenários devem refletir esse domínio (políticas de viagem, aprovações, emissão de bilhetes, relatórios de despesas, integrações com fornecedores, etc.).
 
-### 1e. Consultar GitLab — OBRIGATÓRIO se houver MR/branch vinculado
+### 1e. Buscar e analisar comentários da issue — OBRIGATÓRIO
+
+Use `Atlassian:getJiraIssue` incluindo o campo `comment` para buscar os comentários da issue. Leia todos os comentários e filtre os que sejam pertinentes ao teste:
+
+- Instruções ou requisitos adicionais de validação deixados pelo desenvolvedor ou PO
+- Restrições de ambiente, dados ou pré-condições mencionadas
+- Esclarecimentos sobre comportamento esperado que não constam na descrição
+- Alertas sobre fluxos que devem ou não ser testados
+- Pré-condições específicas de dados (ex.: "ter usuário X sem Y para validar Z")
+
+Incorpore essas informações no plano — especialmente nas seções **Dados/Pré-condições** e **O que será testado**. Não ignore comentários mesmo que a descrição pareça completa.
+
+### 1f. Consultar GitLab — OBRIGATÓRIO se houver MR/branch vinculado
 
 **Sempre** invoque `/gitlab-impacto [ISSUE-KEY]` se a issue tiver MR ou branch vinculado no GitLab. Não pule esse passo mesmo que a descrição técnica do card pareça completa — o diff pode revelar arquivos afetados não mencionados, efeitos colaterais em outros módulos e contexto real da mudança que enriquece os pontos de atenção e os cenários de regressão do plano.
 
