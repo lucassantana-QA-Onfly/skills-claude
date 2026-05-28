@@ -50,7 +50,7 @@ Use `Atlassian:getJiraIssueTypeMetaWithFields` no projeto **TEST** para o tipo *
 Exiba um resumo do que será criado:
 - **Projeto:** TEST
 - **Tipo:** Project
-- **Título:** `Sessão de Testes — [ISSUE-KEY]: [título da issue]`
+- **Título:** `[ISSUE-KEY]: [título da issue]`
 - **Responsável:** nome do usuário identificado no passo 2
 - **Story Points:** valor em pontos obtido no passo 3b (indique também o E total em horas que originou o ponto)
 - **Vínculo:** "tests" → [ISSUE-KEY] (tipo Test)
@@ -63,7 +63,7 @@ Use `Atlassian:createJiraIssue` com os seguintes campos:
 
 - **project**: `TEST`
 - **issuetype**: `Project` (id `11106`)
-- **summary**: `Sessão de Testes — [ISSUE-KEY]: [título da issue original]`
+- **summary**: `[ISSUE-KEY]: [título da issue original]`
 - **assignee**: `accountId` obtido no passo 2
 - **Story point estimate** (`customfield_*` descoberto no passo 3c): valor numérico em pontos obtido no passo 3b (apenas o número, sem "pts")
 - **Categorias** (`customfield_*` correspondente): defina o valor conforme o projeto da issue original:
