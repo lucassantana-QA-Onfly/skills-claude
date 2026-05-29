@@ -71,7 +71,7 @@ query: title = '<nome-da-pasta>' and mimeType = 'application/vnd.google-apps.fol
 
 Cabeçalho inicial:
 ```
-[TEST-XX] [ISSUE-KEY] — [Título da issue]
+[TEST-XX] [ISSUE-KEY] — [Título da issue original]
 ================================================
 ```
 
@@ -85,15 +85,17 @@ ao usuário para colar no documento:
 
 ```
 EVIDÊNCIA N
-[Resumo descritivo: cenário testado, resultado observado, conclusão.]
+O que foi testado: [descrição objetiva do cenário executado]
 
-[Detalhes: valores de console, URL, comportamento observado.]
+Resultado esperado: [comportamento correto conforme especificação]
+
+Resultado obtido: [o que realmente aconteceu — valores, mensagens, comportamento observado]
 
 ------------------------------------------------
 ```
 
 - Numere sequencialmente com base nas evidências já registradas na conversa.
-- Se for print/imagem: descreva detalhadamente o que aparece.
+- Se for print/imagem: descreva em "Resultado obtido" o que aparece (valores no console, URL, comportamento visível).
 - **Não chame nenhuma ferramenta do Drive** — apenas gere o texto.
 
 ---
