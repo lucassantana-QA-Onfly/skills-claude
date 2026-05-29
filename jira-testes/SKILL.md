@@ -6,6 +6,10 @@ argument-hint: "[issue-key]"
 
 # Skill: Gerador de Plano de Teste QA
 
+## Modelo de execução
+- **Análise e geração do plano** (passos 1 a 3 — leitura da issue, Figma, GitLab diff, elaboração do plano): usar `Agent` com `model: "opus"` (`claude-opus-4-8`) para análise aprofundada.
+- **Criação no Jira** (passos 4 a 6 — atualizar descrição do Project via API): executar no contexto principal (Sonnet).
+
 ## Como usar
 Invocado com chave explícita (`/jira-testes PROJ-123`) ou sem argumento — neste
 caso, identifique a issue pelo contexto da conversa. Se não conseguir identificar,

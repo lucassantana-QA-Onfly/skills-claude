@@ -2,6 +2,7 @@
 name: gitlab-impacto
 description: Consulta o card do Jira, localiza o link do GitLab, acessa as mudanças de código e gera uma análise de impacto da tarefa. Somente leitura — nenhuma alteração é feita. Aceita chave da issue como argumento (ex: /gitlab-impacto PROJ-123) ou detecta pelo contexto.
 argument-hint: "[issue-key]"
+model: claude-opus-4-8
 ---
 
 # Skill: Análise de Impacto via GitLab

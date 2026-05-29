@@ -6,6 +6,10 @@ argument-hint: "[issue-key]"
 
 # Skill: Estimativa de Tempo e Esforço de Teste
 
+## Modelo de execução
+- **Análise e geração da estimativa** (passos 1 a 5 — leitura da issue, Figma, análise de complexidade, cálculo PERT): usar `Agent` com `model: "opus"` (`claude-opus-4-8`) para análise aprofundada.
+- **Criação no Jira** (passo 7 — criar ticket Project com Story point estimate): executar no contexto principal (Sonnet).
+
 ## Como usar
 Invocado com chave explícita (`/jira-estimativa PROJ-123`) ou sem argumento — neste
 caso, identifique a issue pelo contexto da conversa. Se não conseguir identificar,
