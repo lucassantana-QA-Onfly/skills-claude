@@ -58,14 +58,24 @@ Se a subpasta não existir, crie-a com `mcp__claude_ai_Google_Drive__create_file
 usando `mimeType: application/vnd.google-apps.folder` e `parentId` da pasta raiz.
 
 ### 4. Verificar se já existe um documento para a sessão
-Use `mcp__claude_ai_Google_Drive__search_files`:
+
+**IMPORTANTE:** `create_file` sempre cria um arquivo novo — nunca sobrescreve o existente.
+Para evitar duplicatas, siga este fluxo:
+
+Use `mcp__claude_ai_Google_Drive__search_files` buscando pelo título exato:
 ```
-query: name = '<nome-do-doc>' and '<id-subpasta>' in parents
+query: title = '<nome-do-doc>' and '<id-subpasta>' in parents
 ```
 
-- **Se existir:** use `mcp__claude_ai_Google_Drive__read_file_content` para ler o
-  conteúdo atual e depois `mcp__claude_ai_Google_Drive__create_file` sobrescrevendo
-  com o conteúdo atualizado (append da nova evidência).
+- **Se existir (um ou mais resultados):**
+  1. Use o arquivo com `modifiedTime` mais recente.
+  2. Leia o conteúdo atual com `mcp__claude_ai_Google_Drive__read_file_content`.
+  3. Construa o conteúdo atualizado (conteúdo existente + nova evidência).
+  4. Crie um novo arquivo com `mcp__claude_ai_Google_Drive__create_file` contendo
+     TODO o conteúdo (antigo + novo).
+  5. **Avise o usuário** que o arquivo antigo ficou duplicado no Drive e que ele
+     deve deletar manualmente o(s) arquivo(s) mais antigo(s) com o mesmo nome.
+
 - **Se não existir:** crie com `mcp__claude_ai_Google_Drive__create_file`.
 
 ### 5. Estrutura do documento
