@@ -30,6 +30,16 @@ Se o prefixo não estiver na tabela, pergunte ao usuário em qual pasta salvar.
 
 ---
 
+## Funcionamento geral
+
+**IMPORTANTE — limitação do MCP:** `create_file` sempre cria um arquivo novo, nunca
+atualiza o existente. Por isso, o documento é mantido em memória de contexto durante
+toda a sessão e gravado no Drive apenas quando o usuário pedir explicitamente
+("salva no drive", "grava as evidências") ou ao finalizar os testes.
+Isso garante um único arquivo por sessão, sem duplicatas.
+
+---
+
 ## Passo a passo
 
 ### 1. Identificar contexto
@@ -39,92 +49,70 @@ Obtenha do contexto da conversa:
 - Título da issue original
 - Nome do documento: `[TEST-XX] [ISSUE-KEY] — [Título da issue]`
 
-### 2. Localizar a pasta "Documento de testes" no Drive
-Use `mcp__claude_ai_Google_Drive__search_files` para encontrar a pasta raiz:
-```
-query: name = 'Documento de testes' and mimeType = 'application/vnd.google-apps.folder'
-```
-Guarde o `id` da pasta encontrada.
-
-### 3. Localizar a subpasta do projeto
-Use `mcp__claude_ai_Google_Drive__search_files` para encontrar a subpasta do projeto
-dentro de "Documento de testes":
-```
-query: name = '<nome-da-pasta>' and mimeType = 'application/vnd.google-apps.folder' and '<id-pai>' in parents
-```
-Guarde o `id` da subpasta.
-
-Se a subpasta não existir, crie-a com `mcp__claude_ai_Google_Drive__create_file`
-usando `mimeType: application/vnd.google-apps.folder` e `parentId` da pasta raiz.
-
-### 4. Verificar se já existe um documento para a sessão
-
-**IMPORTANTE:** `create_file` sempre cria um arquivo novo — nunca sobrescreve o existente.
-Para evitar duplicatas, siga este fluxo:
-
-Use `mcp__claude_ai_Google_Drive__search_files` buscando pelo título exato:
-```
-query: title = '<nome-do-doc>' and '<id-subpasta>' in parents
-```
-
-- **Se existir (um ou mais resultados):**
-  1. Use o arquivo com `modifiedTime` mais recente.
-  2. Leia o conteúdo atual com `mcp__claude_ai_Google_Drive__read_file_content`.
-  3. Construa o conteúdo atualizado (conteúdo existente + nova evidência).
-  4. Crie um novo arquivo com `mcp__claude_ai_Google_Drive__create_file` contendo
-     TODO o conteúdo (antigo + novo).
-  5. **Avise o usuário** que o arquivo antigo ficou duplicado no Drive e que ele
-     deve deletar manualmente o(s) arquivo(s) mais antigo(s) com o mesmo nome.
-
-- **Se não existir:** crie com `mcp__claude_ai_Google_Drive__create_file`.
-
-### 5. Estrutura do documento
-
-O documento deve seguir este formato em texto simples (plain text):
+### 2. Inicializar o documento em memória
+Na primeira invocação da sessão, crie o conteúdo do documento em memória:
 
 ```
 [TEST-XX] [ISSUE-KEY] — [Título da issue]
 ================================================
+```
 
-EVIDÊNCIA 1
-[Resumo descritivo explicando o que a evidência mostra, o cenário testado
-e o resultado observado. Deve ser objetivo e informativo para quem lê sem contexto.]
+Mantenha este conteúdo acumulado no contexto da conversa ao longo de toda a sessão.
+**Não grave no Drive ainda.**
 
-[Conteúdo da evidência — se for texto/log, cole aqui. Se for imagem, descreva
-detalhadamente o que aparece: URL, valores no console, comportamento observado, etc.]
+### 3. Acumular evidências em memória
+A cada nova evidência recebida durante a sessão (print, resultado de console, log):
 
-------------------------------------------------
+1. Acrescente ao conteúdo em memória seguindo a estrutura abaixo.
+2. Confirme ao usuário: "Evidência N registrada em memória. [resumo de 1 linha]"
+3. **Não chame nenhuma ferramenta do Drive** — apenas atualize o conteúdo em contexto.
 
-EVIDÊNCIA 2
-[Resumo descritivo...]
+Estrutura de cada evidência:
+```
+EVIDÊNCIA N
+[Resumo descritivo: cenário testado, resultado observado, conclusão.]
 
-[Conteúdo...]
+[Detalhes: valores de console, URL, comportamento. Se for imagem, descreva o que aparece.]
+[Anexar manualmente: NomeDoArquivo.png]
 
 ------------------------------------------------
 ```
 
-### 6. Inserir a nova evidência
-Ao adicionar uma evidência:
-- Use o contexto da conversa para redigir o resumo descritivo.
-- Se for um print/imagem: descreva o que aparece (URL, resultado no console,
-  comportamento observado) com base no que o usuário compartilhou.
-- Se for texto/log: cole o trecho relevante.
-- Numere sequencialmente (`EVIDÊNCIA N`).
+### 4. Gravar no Drive (somente quando solicitado)
+Quando o usuário pedir para salvar ("salva no drive", "grava as evidências",
+"finaliza o doc") ou ao encerrar a sessão de testes:
 
-### 7. Salvar o documento
-Use `mcp__claude_ai_Google_Drive__create_file` com:
+**4.1 — Localizar pasta raiz:**
+```
+query: title = 'Documento de testes' and mimeType = 'application/vnd.google-apps.folder'
+```
+
+**4.2 — Localizar subpasta do projeto:**
+```
+query: title = '<nome-da-pasta>' and mimeType = 'application/vnd.google-apps.folder' and '<id-pai>' in parents
+```
+Se não existir, crie com `mimeType: application/vnd.google-apps.folder`.
+
+**4.3 — Verificar se já existe um doc desta sessão:**
+```
+query: title = '<nome-do-doc>' and '<id-subpasta>' in parents
+```
+- Se existir: avise o usuário que uma versão anterior existe e será substituída.
+  O usuário deve deletar a versão antiga manualmente após confirmar o conteúdo.
+- Se não existir: prossiga.
+
+**4.4 — Criar o arquivo** com `mcp__claude_ai_Google_Drive__create_file`:
 - `title`: nome do documento
 - `parentId`: id da subpasta do projeto
-- `textContent`: conteúdo completo do documento
-- `contentMimeType`: `text/plain` (será convertido para Google Doc automaticamente)
+- `textContent`: conteúdo completo acumulado em memória
+- `contentMimeType`: `text/plain`
 
-Confirme ao usuário o nome do arquivo e a pasta onde foi salvo.
+Confirme ao usuário: nome do arquivo, pasta e número de evidências gravadas.
 
 ---
 
 ## Observações
-- Sempre que o usuário compartilhar um print ou resultado de teste durante a sessão,
-  pergunte se quer adicionar ao documento de evidências.
-- O documento é cumulativo: cada chamada à skill adiciona novas evidências sem apagar
-  as anteriores.
-- Se o usuário não tiver o Drive autenticado, oriente a autenticar antes de prosseguir.
+- Durante a sessão, responda "Evidência N adicionada." sem chamar ferramentas do Drive.
+- Imagens/prints são mencionados no texto com "[Anexar manualmente: arquivo.png]"
+  e o usuário os adiciona diretamente no Google Drive após a gravação.
+- Se o usuário não tiver o Drive autenticado, oriente a autenticar antes de gravar.
