@@ -25,17 +25,27 @@ Use `mcp__Jira__getJiraIssue` para buscar a issue. Extraia e guarde:
 - Status atual e responsável
 - Qualquer link ou URL do GitLab mencionado na descrição ou campos customizados
 
-### 2. Buscar links remotos da issue
-Use `mcp__Jira__getJiraIssueRemoteIssueLinks` para listar todos os links externos
-associados à issue. Procure por URLs do GitLab (gitlab.com ou instância interna),
-que podem apontar para:
-- **Merge Request (MR)**: `.../merge_requests/NNN`
-- **Commit**: `.../commit/HASH`
-- **Branch**: `.../tree/NOME-BRANCH`
-- **Compare**: `.../compare/...`
+### 2. Buscar branches e MRs vinculados (aba "Desenvolvimento" do Jira)
 
-Se não encontrar nenhum link, informe o usuário e encerre.
-Se encontrar múltiplos links, liste-os e pergunte qual analisar.
+Use a API de dev-status do Jira para listar branches e MRs vinculados — essa é a fonte correta, pois reflete o que aparece na aba **Desenvolvimento** do card:
+
+```bash
+curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" \
+  "https://onflylabs.atlassian.net/rest/dev-status/1.0/issue/detail?issueId={issueId}&applicationType=oAuth-gitlab-jira-connect-gitlab.com&dataType=branch"
+```
+
+> O `issueId` é o **ID numérico** da issue (campo `id` retornado pelo `getJiraIssue`), não a chave (ex: `104745`, não `INTR-305`).
+
+O response retorna `detail[0].branches` (ramificações) e `detail[0].pullRequests` (MRs). De cada branch/MR, extraia:
+- Nome da branch (`name`)
+- Repositório (`repository.name` e `repository.url`)
+- URL do último commit e arquivos alterados (`lastCommit.files`)
+- Status do MR (OPEN, MERGED, CLOSED) e pipeline associado
+
+**Se o response retornar `detail: []`**, tente com `applicationType=gitlab` como fallback. Se ainda estiver vazio, use `mcp__Jira__getJiraIssueRemoteIssueLinks` como última alternativa para links manuais.
+
+Se não encontrar nenhuma branch ou MR em nenhuma das tentativas, informe o usuário e encerre.
+Se encontrar múltiplos MRs abertos, priorize os que apontam para `main`.
 
 ### 3. Identificar o tipo de link e extrair informações
 A partir da URL do GitLab identificada, determine o tipo e extraia os parâmetros:

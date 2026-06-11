@@ -81,13 +81,28 @@ Use `Atlassian:createIssueLink` com:
 - `inwardIssue`: chave do ticket Evaluation criado (TEST-XX) — é quem "tests"
 - `outwardIssue`: chave da issue original — é quem "is tested by"
 
-### 7. Adicionar plano de teste na descrição do ticket
+### 7. Consultar impacto do GitLab (se houver branches/MRs)
+
+Antes de gerar o plano de teste, verifique se há branches ou MRs vinculados via dev-status API:
+
+```bash
+curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" \
+  "https://onflylabs.atlassian.net/rest/dev-status/1.0/issue/detail?issueId={issueId}&applicationType=oAuth-gitlab-jira-connect-gitlab.com&dataType=branch"
+```
+
+> `issueId` = ID numérico da issue (campo `id` do getJiraIssue). Se retornar `detail: []`, tentar `applicationType=gitlab`.
+
+**Se encontrar branches ou MRs:** invoque `/gitlab-impacto [ISSUE-KEY]` e aguarde a análise. O resultado ficará disponível no contexto para enriquecer o plano de teste no passo seguinte.
+
+**Se não encontrar:** pule e siga para o passo 8.
+
+### 8. Adicionar plano de teste na descrição do ticket
 
 Verifique se a issue original possui um plano de teste na descrição (seção como "Test Plan", "Plano de Teste" ou similar).
 
 **Se houver:** copie o conteúdo do plano de teste e cole na descrição do ticket Project criado, usando `Atlassian:editJiraIssue` com `contentFormat: "adf"`.
 
-**Se não houver:** invoque a skill `/jira-testes` passando a chave da issue original para gerar um plano de teste. Após a geração, cole o resultado na descrição do ticket Project criado da mesma forma.
+**Se não houver:** invoque a skill `/jira-testes` passando a chave da issue original. O `/jira-testes` usará automaticamente a análise de impacto gerada no passo 7 (se disponível no contexto) para enriquecer o plano. Após a geração, cole o resultado na descrição do ticket Project criado da mesma forma.
 
 ### 8. Confirmar ao usuário
 

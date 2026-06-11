@@ -100,7 +100,24 @@ Incorpore essas informações no plano — especialmente nas seções **Dados/Pr
 
 ### 1f. Consultar GitLab — OBRIGATÓRIO se houver MR/branch vinculado
 
-**Sempre** invoque `/gitlab-impacto [ISSUE-KEY]` se a issue tiver MR ou branch vinculado no GitLab. Não pule esse passo mesmo que a descrição técnica do card pareça completa — o diff pode revelar arquivos afetados não mencionados, efeitos colaterais em outros módulos e contexto real da mudança que enriquece os pontos de atenção e os cenários de regressão do plano.
+**Primeiro, verifique se a análise de impacto do GitLab já está disponível no contexto** (gerada pelo `/iniciar-testes` ou por uma chamada prévia ao `/gitlab-impacto`). Se estiver, use diretamente — não execute novamente.
+
+**Se não estiver disponível**, verifique se há branches ou MRs vinculados via dev-status API (não use `getJiraIssueRemoteIssueLinks`):
+
+```bash
+curl -s -u "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" \
+  "https://onflylabs.atlassian.net/rest/dev-status/1.0/issue/detail?issueId={issueId}&applicationType=oAuth-gitlab-jira-connect-gitlab.com&dataType=branch"
+```
+
+> O `issueId` é o **ID numérico** da issue (campo `id` do `getJiraIssue`). Se retornar `detail: []`, tente `applicationType=gitlab`.
+
+Se encontrar branches ou MRs, invoque `/gitlab-impacto [ISSUE-KEY]` e aguarde.
+
+**Como usar a análise de impacto no plano:**
+- Incorpore os arquivos alterados e impactos estimados na seção **"Pontos de atenção"** do "Como testar"
+- Use os riscos identificados (pipelines falhando, cobertura de testes ausente, dependências afetadas) para enriquecer **"Motivação & Risco"** e **"Áreas adjacentes em risco"**
+- Mencione explicitamente quais módulos foram modificados (ex: Quote vs Booking) e possíveis divergências entre eles na seção **"O que será testado"**
+- Se houver MRs com pipeline falhando, registre como item Crítico no plano
 
 ### 2. Gerar o plano de teste
 
