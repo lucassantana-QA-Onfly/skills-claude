@@ -185,8 +185,12 @@ Salve a chave e o **summary (título)** da nova issue criada para uso nos próxi
 
 Quando o ticket Fix já existir (informado pelo usuário), use `Atlassian:getJiraIssue` para buscar o título real do ticket antes de enviar a notificação.
 
-### 5.5 Anexar arquivo ao ticket Fix (opcional)
-Se o usuário informou um arquivo (imagem ou vídeo) no relato, anexe-o ao **ticket Fix criado** via Bash tool:
+### 5.5 Anexar arquivo ao ticket Fix (OBRIGATÓRIO quando houver imagem)
+**Sempre** verifique se há imagens disponíveis para anexar — em duas fontes:
+1. **Prints compartilhados na conversa**: se o usuário enviou screenshots durante a sessão de testes (especialmente as relacionadas ao bug relatado), use os caminhos das imagens diretamente. Não peça confirmação — anexe automaticamente.
+2. **Arquivo informado pelo usuário**: se o usuário mencionou um caminho de arquivo explicitamente no relato, use esse caminho.
+
+Anexe ao **ticket Fix criado** via Bash tool:
 
 ```bash
 WINPATH=$(cygpath -w "/c/caminho/para/arquivo") && curl -s -X POST \
@@ -308,8 +312,12 @@ Use `Atlassian:editJiraIssue` com `contentFormat: "adf"` para **sobrescrever** o
 
 > Não é necessário buscar a issue antes para verificar — o template é sempre injetado. Execute o edit direto.
 
-### 5. Anexar arquivo ao Bug (opcional)
-Se o usuário informou um print/screenshot/vídeo, anexe-o ao Bug criado via Bash tool:
+### 5. Anexar arquivo ao Bug (OBRIGATÓRIO quando houver imagem)
+**Sempre** verifique se há imagens disponíveis para anexar — em duas fontes:
+1. **Prints compartilhados na conversa**: se o usuário enviou screenshots relacionadas ao bug, use os caminhos diretamente. Não peça confirmação — anexe automaticamente.
+2. **Arquivo informado pelo usuário**: se o usuário mencionou um caminho de arquivo explicitamente.
+
+Anexe ao Bug criado via Bash tool:
 
 ```bash
 WINPATH=$(cygpath -w "/c/caminho/para/arquivo") && curl -s -X POST \
