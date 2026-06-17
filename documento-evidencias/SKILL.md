@@ -11,7 +11,7 @@ Invocado com chave explícita (`/documento-evidencias TEST-268`) ou sem argument
 neste caso, identifique a sessão de testes (TEST-XX) e a issue original pelo contexto
 da conversa.
 
-> Esta skill **cria ou atualiza** um Google Doc no Drive. Não altera nada no Jira ou GitLab.
+> Esta skill **cria ou atualiza** um Google Doc no Drive e vincula o documento ao ticket Evaluation no Jira como link da web.
 
 ---
 
@@ -79,6 +79,30 @@ Informe ao usuário o link do documento criado e que ele deve colar as evidênci
 
 Se o documento já existir na pasta, apenas informe o link e pule a criação.
 
+**2.4 — Vincular documento ao ticket Evaluation no Jira:**
+
+Após criar o documento, adicionar um remote link no ticket TEST-XX via Bash:
+
+```bash
+curl -s -X POST \
+  "https://api.atlassian.com/ex/jira/24479377-75bf-4543-a6f6-0a189a0ec825/rest/api/3/issue/{TEST-XX}/remotelink" \
+  -H "Authorization: Basic $(printf '%s' "$ATLASSIAN_EMAIL:$ATLASSIAN_TOKEN" | base64 -w 0)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "relationship": "Evidências",
+    "object": {
+      "url": "<url_do_documento>",
+      "title": "<título_do_documento>",
+      "icon": {
+        "url16x16": "https://drive.google.com/favicon.ico",
+        "title": "Google Drive"
+      }
+    }
+  }'
+```
+
+O link aparecerá na seção **"Links da web"** do ticket com o rótulo **"Evidências"**.
+
 ### 3. Gerar conteúdo da evidência
 A cada nova evidência durante a sessão, gere o bloco de texto abaixo e entregue
 ao usuário para colar no documento:
@@ -105,3 +129,4 @@ Resultado obtido: [o que realmente aconteceu — valores, mensagens, comportamen
   texto para o usuário colar diretamente no documento.
 - Prints são anexados manualmente pelo usuário no Google Drive.
 - Se o usuário não tiver o Drive autenticado, oriente a autenticar antes de criar.
+- O remote link no Jira é adicionado apenas uma vez, na criação do documento. Se o documento já existir, não re-adicionar o link.
